@@ -206,9 +206,12 @@ public class MainActivity extends AppCompatActivity{
         int id= item.getItemId();
 
         if (id==R.id.SyncDawai){
+
+            db=helper.getReadableDatabase();
             db.delete("DAWAI",null,null);
+
             GetData getData = new GetData();
-            getData.execute("SyncDawai");
+            getData.execute("hello");
         }
 
         return super.onOptionsItemSelected(item);
@@ -312,7 +315,7 @@ public class MainActivity extends AppCompatActivity{
                     {
                         @Override
                         public void onErrorResponse(VolleyError error) {
-                            Toast.makeText(MainActivity.this,"Sync not Completed. Try Again",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this,"Sync Not Completed. Try Again",Toast.LENGTH_SHORT).show();
                             Log.d("Error.Response", String.valueOf(error));
                         }
                     }
