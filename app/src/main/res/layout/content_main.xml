@@ -18,26 +18,54 @@
         app:layout_constraintTop_toTopOf="parent"
         app:navGraph="@navigation/mobile_navigation" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/getJson"
-        android:text="GET JSON" />
-
-    <SearchView
-        android:id="@+id/search_items"
+    <com.mancj.materialsearchbar.MaterialSearchBar
+        app:speechMode="false"
+        app:hint="Search Medicine"
+        app:maxSuggestionsCount="10"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:iconifiedByDefault="false"
-        android:layout_below="@id/getJson" >
-        <requestFocus/>
-    </SearchView>
+        android:id="@+id/searchBar"/>
 
-    <ListView
+    <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/listView"
-        tools:ignore="MissingConstraints"
-        android:layout_below="@+id/search_items"/>
+        android:layout_below="@id/searchBar"
+        android:id="@+id/searchBy">
+
+        <com.jaredrummler.materialspinner.MaterialSpinner
+            android:id="@+id/spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Search By"
+            android:layout_toLeftOf="@id/spinner"
+            android:layout_toStartOf="@id/spinner"
+            android:layout_marginRight="12dp"
+            android:layout_marginEnd="12dp"
+            android:textSize="18sp"
+            android:textColor="@color/dark"/>
+
+
+    </RelativeLayout>
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/list_view"
+        android:layout_below="@id/searchBy"/>
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/recycler_view"
+        android:layout_marginTop="12dp"
+        android:layout_below="@id/searchBy"/>
+
 
 </RelativeLayout>

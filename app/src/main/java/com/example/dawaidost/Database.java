@@ -2,8 +2,9 @@ package com.example.dawaidost;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 
-public class Database {
+public class Database extends SQLiteOpenHelper {
     public static String DB_NAME="DAWAI";
     public static int DB_VERSION=1;
 
@@ -14,6 +15,7 @@ public class Database {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        //table for updating dawais
         db.execSQL("CREATE TABLE DAWAI(CODE TEXT PRIMARY KEY,"+
                 "TYPE TEXT,"+
                 "BRANDNAME TEXT,"+
@@ -22,6 +24,15 @@ public class Database {
                 "PACKING TEXT,"+
                 "MRP INTEGER,"+
                 "PRICE INTEGER,"+
+                "MAXORDER INTEGER)");
+
+        //table for saving order
+        db.execSQL("CREATE TABLE CART(CODE TEXT PRIMARY KEY,"+
+                "TYPE TEXT,"+
+                "BRANDNAME TEXT,"+
+                "GENERIC TEXT,"+
+                "COMPANY TEXT,"+
+                "PRICE TEXT,"+
                 "MAXORDER INTEGER)");
     }
 
