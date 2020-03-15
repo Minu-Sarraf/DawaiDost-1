@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -29,15 +30,17 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
     Context context;
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
-        public TextView textView1, textView2;
+        public TextView textView1, textView2, textCode;
         public ImageView imageView;
-
+        public LinearLayout linearLayout;
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
+            linearLayout = (LinearLayout) itemView.findViewById(R.id.row);
             textView1 = (TextView) itemView.findViewById(R.id.text1);
             textView2 = (TextView) itemView.findViewById(R.id.text2);
+            textCode = (TextView) itemView.findViewById(R.id.code);
             imageView = (ImageView) itemView.findViewById(R.id.image);
-
+            linearLayout.setOnClickListener(this);
             imageView.setOnClickListener(this);
 
         }
@@ -47,6 +50,7 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
         public void onClick(View view) {
             int position=getAdapterPosition();
             switch(view.getId()){
+                case R.id.row:
                 case R.id.image:
                     //go to add cart page
                     Intent intent = new Intent(context, AddCart.class);
@@ -88,8 +92,11 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
         String tp = type.get(position);
         String bd = brand.get(position);
         String gn = generic.get(position);
-        holder.textView1.setText(cd+": "+gn);
-        holder.textView2.setText(tp+" "+bd);
+        //change to different column
+        holder.textCode.setText(cd + ": ");
+        holder.textView1.setText(gn);
+        //indicate type n brand
+        holder.textView2.setText("Type: " + tp+",  Brand: "+bd);
         //add to cart image
         holder.imageView.setImageResource(R.drawable.add_cart);
 

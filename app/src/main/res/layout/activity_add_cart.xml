@@ -24,15 +24,17 @@
             android:text="CODE : "
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
-            android:layout_weight="1"/>
+            />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/code"
             android:textSize="@dimen/text_size"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+
             android:textColor="@color/dark"
-            android:layout_weight="1" />
+            />
 
     </LinearLayout>
 
@@ -48,15 +50,16 @@
             android:text="TYPE : "
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
-            android:layout_weight="1"/>
+            />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/type"
             android:textSize="@dimen/text_size"
-            android:textColor="@color/dark"
-            android:layout_weight="1"/>
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+
+            android:textColor="@color/dark" />
 
     </LinearLayout>
 
@@ -72,15 +75,17 @@
             android:text="BRAND : "
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
-            android:layout_weight="1"/>
+            />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/brand"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
-            android:layout_weight="1"/>
+            />
 
     </LinearLayout>
 
@@ -96,15 +101,16 @@
             android:text="GENERIC : "
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
-            android:layout_weight="1"/>
+            />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/generic"
             android:textSize="@dimen/text_size"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
             android:textColor="@color/dark"
-            android:layout_weight="1"/>
+            />
 
     </LinearLayout>
 
@@ -120,15 +126,16 @@
             android:text="COMPANY : "
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
-            android:layout_weight="1"/>
+            />
 
         <TextView
             android:layout_width="wrap_content"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
             android:layout_height="wrap_content"
             android:id="@+id/company"
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
-            android:layout_weight="1"/>
+            />
 
     </LinearLayout>
 
@@ -144,15 +151,17 @@
             android:text="PRICE : "
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
-            android:layout_weight="1"/>
+            />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/price"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
-            android:layout_weight="1"/>
+            />
 
     </LinearLayout>
 
@@ -168,10 +177,12 @@
             android:text="NUMBER OF ORDER : "
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
-            android:layout_weight="1"/>
+            />
 
         <com.jaredrummler.materialspinner.MaterialSpinner
             android:id="@+id/spinner"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 

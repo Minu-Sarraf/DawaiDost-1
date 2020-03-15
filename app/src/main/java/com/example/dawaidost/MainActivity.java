@@ -56,6 +56,13 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Locale;
 
+
+
+//to be done
+// 1. change color 2. UI of search 3. make email work with ip n location 4. remove gallery n all
+// 5. layout of your cart and showlist 6. y code s different 7. add branches 8. add splash screen
+// 9. load database everyday 10. add back button 11. internet status
+
 public class MainActivity extends AppCompatActivity{
 
     private AppBarConfiguration mAppBarConfiguration;
@@ -67,6 +74,10 @@ public class MainActivity extends AppCompatActivity{
     MaterialSpinner spinner;
     String selectSearch;
     RecyclerView recyclerView;
+    ArrayList<String> code = new ArrayList<>();
+    ArrayList<String> type = new ArrayList<>();
+    ArrayList<String> brand = new ArrayList<>();
+    ArrayList<String> generic = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,8 +113,14 @@ public class MainActivity extends AppCompatActivity{
 
 
         //showing search match
-        recyclerView = findViewById(R.id.recycler_view);
+        recyclerView = findViewById(R.id.recycler_view1);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
+        recyclerView.setLayoutManager(layoutManager);
+        RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(MainActivity.this,DividerItemDecoration.VERTICAL);
+        recyclerView.addItemDecoration(itemDecoration);
+        CustomAdapter customAdapter = new CustomAdapter(MainActivity.this,code,type,brand,generic);
 
+        recyclerView.setAdapter(customAdapter);
         //material spinner for selecting search type
         spinner = findViewById(R.id.spinner);
         spinner.setItems("Code", "Type", "Brand", "Generic");
@@ -129,13 +146,13 @@ public class MainActivity extends AppCompatActivity{
                 //search action when selected from spinner
                 if (selectSearch==null)
                     selectSearch="Code";
-
+                Log.e("type", selectSearch);
                 if(selectSearch.equals("Type")){
-                    showList(1,0);
+                    showList(1,2);
                 }else if (selectSearch.equals("Brand")){
-                    showList(2,0);
+                    showList(2,2);
                 }else if (selectSearch.equals("Generic")){
-                    showList(3,0);
+                    showList(3,2);
                 }else{
                     //search length 3 for code search
                     showList(0,2);
@@ -166,10 +183,7 @@ public class MainActivity extends AppCompatActivity{
 
         }else{
             //search length is reached.
-            ArrayList<String> code = new ArrayList<>();
-            ArrayList<String> type = new ArrayList<>();
-            ArrayList<String> brand = new ArrayList<>();
-            ArrayList<String> generic = new ArrayList<>();
+
             boolean cursorValue = cursor.moveToFirst();
             while(cursorValue){
                 if (cursor.getString(value).contains(materialSearchBar.getText().toUpperCase(Locale.ENGLISH))){
@@ -184,10 +198,7 @@ public class MainActivity extends AppCompatActivity{
 
             //populating recycler view
             CustomAdapter customAdapter = new CustomAdapter(MainActivity.this,code,type,brand,generic);
-            RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
-            recyclerView.setLayoutManager(layoutManager);
-            RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(MainActivity.this,DividerItemDecoration.VERTICAL);
-            recyclerView.addItemDecoration(itemDecoration);
+
             recyclerView.setAdapter(customAdapter);
 
         }
@@ -240,7 +251,7 @@ public class MainActivity extends AppCompatActivity{
                 try{
                     //extracting data from json response
                     finalObject=array.getJSONObject(count);
-                    Log.d("finObj",finalObject.toString());
+                    Log.e("finObj",finalObject.toString());
 
                     String code = String.valueOf(finalObject.get("CODE"));
                     String type = String.valueOf(finalObject.get("TYPE"));
@@ -306,6 +317,7 @@ public class MainActivity extends AppCompatActivity{
                             try {
                                 JSONArray arr = response.getJSONArray("Sheet1");
                             } catch (JSONException e) {
+                                Log.d("Error.Response", "fail");
                                 e.printStackTrace();
                             }
                             finalResponse= response;
