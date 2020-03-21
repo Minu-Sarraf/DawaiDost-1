@@ -16,12 +16,6 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ListView;
-import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -31,7 +25,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 import com.mancj.materialsearchbar.MaterialSearchBar;
@@ -56,7 +49,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Locale;
 
-
+//https://www.google.com/maps/place/Dawai+Dost+-+1+-+Upper+Bazaar/@23.376317,85.3170739,15z/data=!4m5!3m4!1s0x0:0xdabe8770a0909b0!8m2!3d23.376317!4d85.3170739
 
 //to be done
 // 1. change color 2. UI of search 3. make email work with ip n location 4. remove gallery n all
