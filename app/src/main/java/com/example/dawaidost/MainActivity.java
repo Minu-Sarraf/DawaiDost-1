@@ -53,7 +53,7 @@ import java.util.Locale;
 
 //to be done
 // 1. change color 2. UI of search 3. make email work with ip n location 4. remove gallery n all
-// 5. layout of your cart and showlist 6. y code s different 7. add branches 8. add splash screen
+// 5. layout of your cart and showlist 6. y code s different for database 7. add branches 8. add splash screen
 // 9. load database everyday 10. add back button 11. internet status
 
 public class MainActivity extends AppCompatActivity{
@@ -300,6 +300,7 @@ public class MainActivity extends AppCompatActivity{
             RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
 
             //url of the google sheet
+            //it should be kept in separate file at one place
             final String url = "https://script.google.com/macros/s/AKfycbxOLElujQcy1-ZUer1KgEvK16gkTLUqYftApjNCM_IRTL3HSuDk/exec?id=1Otp-z4nZshefjvji-tBIKqyG6fO74G6sXZ9TfmMlQfI&sheet=Sheet1";
 
             JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.GET, url, null,
