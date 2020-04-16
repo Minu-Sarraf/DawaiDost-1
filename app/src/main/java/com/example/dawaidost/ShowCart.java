@@ -1,35 +1,57 @@
 package com.example.dawaidost;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Environment;
+import android.text.format.Formatter;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 
 public class ShowCart extends AppCompatActivity {
 
     SQLiteOpenHelper helper = new Database(ShowCart.this);
-    ArrayList<String> code= new ArrayList<>();
-    ArrayList<String> type= new ArrayList<>();
-    ArrayList<String> brand= new ArrayList<>();
-    ArrayList<String> generic= new ArrayList<>();
+    ArrayList<String> code = new ArrayList<>();
+    ArrayList<String> type = new ArrayList<>();
+    ArrayList<String> brand = new ArrayList<>();
+    ArrayList<String> generic = new ArrayList<>();
     public CartAdapter adapter;
+    String address, ip;
+    double latitude, longitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,25 +59,91 @@ public class ShowCart extends AppCompatActivity {
         setContentView(R.layout.activity_show_cart);
         setTitle("Your Cart");
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        //getting ip address
+        WifiManager manager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        WifiInfo info = manager.getConnectionInfo();
+        address = info.getMacAddress();
+        ip = Formatter.formatIpAddress(manager.getConnectionInfo().getIpAddress());
+
+        /*Log.d("mac",address);
+        Log.d("mac", ip);*/
+
+        //getting location
+        LocationListener listener = new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                latitude = location.getLatitude();
+                longitude = location.getLongitude();
+            }
+
+            @Override
+            public void onStatusChanged(String s, int i, Bundle bundle) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String s) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(String s) {
+
+            }
+        };
+
+        LocationManager mLoc = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        mLoc.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);
+
         //floating action button to send mail
         FloatingActionButton fb= findViewById(R.id.fab);
         fb.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                //code to send mail
+                //check internet connection
+                boolean connected = false;
+                ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+                if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                        connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+                    connected = true;
+                }
+                else{
+                    connected = false;
+                }
 
-                Toast.makeText(ShowCart.this,"Send Mail",Toast.LENGTH_SHORT).show();
+                if (connected == false){
+                    Toast.makeText(ShowCart.this, "No Internet Connection",Toast.LENGTH_SHORT).show();
+                }else{
+                    //export the database into csv file
+                    try {
+                        exportTheDB();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
 
-                //delete all items from cart after sending mail
-                SQLiteOpenHelper helper = new Database(ShowCart.this);
-                SQLiteDatabase db = helper.getReadableDatabase();
-                db.delete("CART",null,null);
+                    //code to send mail
+                    sendmail();
 
-                //go to homepage
-                Intent intent = new Intent(ShowCart.this,MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
+                    //Toast.makeText(ShowCart.this,"Send Mail",Toast.LENGTH_SHORT).show();
+                    //delete all items from cart after sending mail
+                    SQLiteDatabase db = helper.getReadableDatabase();
+                    db.delete("CART",null,null);
+                }
+
+
             }
         });
 
@@ -68,7 +156,6 @@ public class ShowCart extends AppCompatActivity {
             Cursor cursor = db.query("CART",
                     new String[]{"CODE", "TYPE", "BRANDNAME", "GENERIC"},
                     null, null, null, null, null);
-
 
             //recycler view
             boolean cursorValue = cursor.moveToFirst();
@@ -112,19 +199,88 @@ public class ShowCart extends AppCompatActivity {
         // Create adapter passing in the sample user data
         adapter = new CartAdapter(ShowCart.this,code,type,brand,generic);
 
-        /*adapter.notifyItemRemoved(adapter.getAdapterPosition());
-        adapter.notifyDataSetChanged();*/
+        // Set layout manager to position the items
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         // Attach the adapter to the recyclerview to populate items
         recyclerView.setAdapter(adapter);
 
-        // Set layout manager to position the items
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+    }
 
-        //set divider
-        RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL);
-        recyclerView.addItemDecoration(itemDecoration);
+    private void exportTheDB() throws IOException
+    {
+        SQLiteDatabase db = helper.getReadableDatabase();
+        Cursor cursor = db.query("CART",
+                new String[] {"CODE","TYPE","BRANDNAME","GENERIC","COMPANY","PRICE", "MAXORDER"},
+                null,null,null,null,null);
 
+        File myFile;
+        String path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/DawaiDost/";
+        Log.d("paths",path);
+
+        try {
+            new File(path  ).mkdir();
+            myFile = new File(path+"order.csv");
+            //Log.d("Datases","1");
+            myFile.createNewFile();
+            //Log.d("Datases","2");
+
+            FileOutputStream fOut = new FileOutputStream(myFile);
+            OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+
+            //giving the column names
+            myOutWriter.append("CODE,TYPE,BRAND NAME,GENERIC,COMPANY,PRICE,QUANTITY");
+            myOutWriter.append("\n");
+
+            boolean cursorValue= cursor.moveToFirst();
+
+            while(cursorValue){
+
+                myOutWriter.append(cursor.getString(0));
+                myOutWriter.append(",");
+                myOutWriter.append(cursor.getString(1));
+                myOutWriter.append(",");
+                myOutWriter.append(cursor.getString(2));
+                myOutWriter.append(",");
+                myOutWriter.append(cursor.getString(3));
+                myOutWriter.append(",");
+                myOutWriter.append(cursor.getString(4));
+                myOutWriter.append(",");
+                myOutWriter.append(cursor.getString(5));
+                myOutWriter.append(",");
+                myOutWriter.append(cursor.getString(6));
+
+                myOutWriter.append("\n");
+
+                cursorValue = cursor.moveToNext();
+            }
+
+            myOutWriter.close();
+            fOut.close();
+
+        } catch (SQLiteException e) {
+            Log.e("okas","Could not create or Open the database");
+        }
+
+    }
+
+    public void sendmail(){
+
+        String path = "file:///"+Environment.getExternalStorageDirectory().getAbsolutePath()+"/DawaiDost/order.csv";
+        Log.d("path",path);
+        Uri uri = Uri.parse(path);
+
+
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_EMAIL, new String[] {"minusarraf96@gmail.com"});
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Order");
+        intent.putExtra(Intent.EXTRA_TEXT,"MAC ADDRESS:"+address+"\n"+"IP ADDRESS:"+ip+"\n"+"LATITUDE:"+latitude+"\n"+"LONGITUDE"+longitude);
+        intent.putExtra(Intent.EXTRA_STREAM, uri);
+
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
     }
 
 
@@ -132,5 +288,14 @@ public class ShowCart extends AppCompatActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch(item.getItemId()){
+            case android.R.id.home:
+                finish();
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

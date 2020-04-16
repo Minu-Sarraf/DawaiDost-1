@@ -43,4 +43,5 @@ dependencies {
     implementation 'com.github.mancj:MaterialSearchBar:0.6'
     //noinspection GradleCompatible
     implementation 'com.android.support:recyclerview-v7:26.1.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
 }

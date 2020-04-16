@@ -24,6 +24,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.MyViewHolder> {
@@ -33,11 +35,12 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.MyViewHolder> 
     SQLiteDatabase db;
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
-        public TextView textView1, textView2;
+        public TextView textView1, textView2,textCode;
         public ImageView imageView;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
+            textCode= (TextView) itemView.findViewById(R.id.code);
             textView1 = (TextView) itemView.findViewById(R.id.text1);
             textView2 = (TextView) itemView.findViewById(R.id.text2);
             imageView = (ImageView) itemView.findViewById(R.id.image);
@@ -113,7 +116,8 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.MyViewHolder> 
         String tp = type.get(position);
         String bd = brand.get(position);
         String gn = generic.get(position);
-        holder.textView1.setText(cd+": "+gn);
+        holder.textCode.setText(cd+": ");
+        holder.textView1.setText(gn);
         holder.textView2.setText(tp+" "+bd);
         holder.imageView.setImageResource(R.drawable.delete);
 

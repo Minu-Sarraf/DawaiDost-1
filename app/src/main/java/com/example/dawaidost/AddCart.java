@@ -1,5 +1,6 @@
 package com.example.dawaidost;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.ContentValues;
@@ -10,6 +11,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -24,7 +26,7 @@ public class AddCart extends AppCompatActivity implements View.OnClickListener {
 
     TextView tv1, tv2, tv3, tv4,tv5,tv6;
     String code, type, brand, generic, company, price, mrp;
-    int noOrder;
+    int noOrder=1;
     SQLiteOpenHelper helper = new Database(AddCart.this);
     SQLiteDatabase db;
 
@@ -33,6 +35,9 @@ public class AddCart extends AppCompatActivity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_cart);
         setTitle("Add to Cart");
+
+        //backbutton
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         //populating views
         tv1=findViewById(R.id.code);
@@ -96,18 +101,21 @@ public class AddCart extends AppCompatActivity implements View.OnClickListener {
                     contentValues.put("TYPE",type);
                     contentValues.put("BRANDNAME",brand);
                     contentValues.put("GENERIC",generic);
+                    contentValues.put("COMPANY",company);
                     contentValues.put("PRICE",price);
                     contentValues.put("MAXORDER",noOrder);
                     db.insert("CART",null,contentValues);
+                    Toast.makeText(AddCart.this,"Added to Cart",Toast.LENGTH_SHORT).show();
                 }catch(SQLException e){
-                    Toast.makeText(AddCart.this,"Database Unavailabe",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AddCart.this,"Database Unavailable",Toast.LENGTH_SHORT).show();
                 }
 
                 //go to home page
                 Intent intent = new Intent(AddCart.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                Toast.makeText(AddCart.this,"Added to Cart",Toast.LENGTH_SHORT).show();
                 startActivity(intent);
+                finish();
+
 
             }
         });
@@ -117,5 +125,15 @@ public class AddCart extends AppCompatActivity implements View.OnClickListener {
     @Override
     public void onClick(View view) {
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case android.R.id.home:
+                finish();
+
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

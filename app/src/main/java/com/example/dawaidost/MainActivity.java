@@ -1,21 +1,34 @@
 package com.example.dawaidost;
 
+import android.app.ActionBar;
 import android.app.LauncherActivity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
+import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.FrameLayout;
+import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -30,6 +43,7 @@ import com.jaredrummler.materialspinner.MaterialSpinner;
 import com.mancj.materialsearchbar.MaterialSearchBar;
 
 import androidx.annotation.NonNull;
+import androidx.core.view.GravityCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -52,33 +66,99 @@ import java.util.Locale;
 //https://www.google.com/maps/place/Dawai+Dost+-+1+-+Upper+Bazaar/@23.376317,85.3170739,15z/data=!4m5!3m4!1s0x0:0xdabe8770a0909b0!8m2!3d23.376317!4d85.3170739
 
 //to be done
-// 1. change color 2. UI of search 3. make email work with ip n location 4. remove gallery n all
-// 5. layout of your cart and showlist 6. y code s different for database 7. add branches 8. add splash screen
-// 9. load database everyday 10. add back button 11. internet status
+// 1. change color
+// 2. UI of search                              "Done"
+// 3. make email work with ip n location        "Done"
+// 4. remove gallery n all                      "Done"
+// 5. layout of your cart and showlist          "Done"
+// 6. y code s different for database           "Ask"
+// 7. add branches                              "Leave it"
+// 8. add splash screen                         "Done"
+// 9. load database everyday                    "Leave it"
+// 10. add back button                          "Done"
+// 11. internet status                          "Done"
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
     private AppBarConfiguration mAppBarConfiguration;
 
-    JSONObject mResponse;
     SQLiteOpenHelper helper = new Database(MainActivity.this);
     SQLiteDatabase db;
     private MaterialSearchBar materialSearchBar;
     MaterialSpinner spinner;
     String selectSearch;
     RecyclerView recyclerView;
-    ArrayList<String> code = new ArrayList<>();
-    ArrayList<String> type = new ArrayList<>();
-    ArrayList<String> brand = new ArrayList<>();
-    ArrayList<String> generic = new ArrayList<>();
+    ProgressBar dawaiLoadingDialog;
+    JSONObject mResponse;
+    static boolean synced = false;
+    DrawerLayout drawer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (synced==false){
+            //Show progressbar while volley request is serviced
+            dawaiLoadingDialog = new ProgressBar(this,null,android.R.attr.progressBarStyleLargeInverse);
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
+            params.gravity = Gravity.CENTER;
+            ((FrameLayout)getWindow().getDecorView().findViewById(android.R.id.content)).addView(dawaiLoadingDialog,params);
+            dawaiLoadingDialog.setVisibility(View.VISIBLE);  //To show ProgressBar
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+
+            GetData getData = new GetData();
+            getData.execute("hello");
+            synced=!synced;
+        }
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        //check internet connection
+        boolean connected = false;
+        ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+            connected = true;
+        }
+        else{
+            connected = false;
+        }
+
+
+        //getdata for the first boot
+        boolean firstBoot = getSharedPreferences("BOOT_PREF",MODE_PRIVATE).getBoolean("firstBoot",true);
+        if(firstBoot){
+
+            //show no connection page
+            if (connected==false){
+                Intent intent = new Intent(MainActivity.this,NoConnection.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+            } else{
+                //Show progressbar while volley request is serviced
+                dawaiLoadingDialog = new ProgressBar(this,null,android.R.attr.progressBarStyleLargeInverse);
+                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
+                params.gravity = Gravity.CENTER;
+                ((FrameLayout)getWindow().getDecorView().findViewById(android.R.id.content)).addView(dawaiLoadingDialog,params);
+                dawaiLoadingDialog.setVisibility(View.VISIBLE);  //To show ProgressBar
+                getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+
+                GetData getData = new GetData();
+                getData.execute("hello");
+
+                getSharedPreferences("BOOT_PREF",MODE_PRIVATE)
+                        .edit()
+                        .putBoolean("firstBoot",false)
+                        .commit();
+            }
+
+        }
+
 
         //on click floating action button
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -92,12 +172,13 @@ public class MainActivity extends AppCompatActivity{
             }
         });
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
+                R.id.nav_home, R.id.branches)
                 .setDrawerLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
@@ -105,15 +186,14 @@ public class MainActivity extends AppCompatActivity{
         NavigationUI.setupWithNavController(navigationView, navController);
 
 
+
         //showing search match
         recyclerView = findViewById(R.id.recycler_view1);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
-        RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(MainActivity.this,DividerItemDecoration.VERTICAL);
-        recyclerView.addItemDecoration(itemDecoration);
-        CustomAdapter customAdapter = new CustomAdapter(MainActivity.this,code,type,brand,generic);
 
-        recyclerView.setAdapter(customAdapter);
+
+
         //material spinner for selecting search type
         spinner = findViewById(R.id.spinner);
         spinner.setItems("Code", "Type", "Brand", "Generic");
@@ -141,11 +221,11 @@ public class MainActivity extends AppCompatActivity{
                     selectSearch="Code";
                 Log.e("type", selectSearch);
                 if(selectSearch.equals("Type")){
-                    showList(1,2);
+                    showList(1,0);
                 }else if (selectSearch.equals("Brand")){
-                    showList(2,2);
+                    showList(2,0);
                 }else if (selectSearch.equals("Generic")){
-                    showList(3,2);
+                    showList(3,0);
                 }else{
                     //search length 3 for code search
                     showList(0,2);
@@ -176,6 +256,10 @@ public class MainActivity extends AppCompatActivity{
 
         }else{
             //search length is reached.
+            ArrayList<String> code = new ArrayList<>();
+            ArrayList<String> type = new ArrayList<>();
+            ArrayList<String> brand = new ArrayList<>();
+            ArrayList<String> generic = new ArrayList<>();
 
             boolean cursorValue = cursor.moveToFirst();
             while(cursorValue){
@@ -211,11 +295,39 @@ public class MainActivity extends AppCompatActivity{
 
         if (id==R.id.SyncDawai){
 
-            db=helper.getReadableDatabase();
-            db.delete("DAWAI",null,null);
+            //check internet connection
+            boolean connected = false;
+            ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+            if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                    connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+                connected = true;
+            }
+            else{
+                connected = false;
+            }
 
-            GetData getData = new GetData();
-            getData.execute("hello");
+            //show no connection page
+            if (connected==false){
+                Toast.makeText(MainActivity.this,"No Internet Connection",Toast.LENGTH_SHORT).show();
+            } else {
+
+                //Show progressbar while volley request is serviced
+                dawaiLoadingDialog = new ProgressBar(this,null,android.R.attr.progressBarStyleLargeInverse);
+                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
+                params.gravity = Gravity.CENTER;
+                ((FrameLayout)getWindow().getDecorView().findViewById(android.R.id.content)).addView(dawaiLoadingDialog,params);
+                dawaiLoadingDialog.setVisibility(View.VISIBLE);  //To show ProgressBar
+                getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+
+                GetData getData = new GetData();
+                getData.execute("hello");
+            }
+
+
+        }else if(id == R.id.branches){
+            Intent intent = new Intent(MainActivity.this, Branches.class);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
@@ -226,6 +338,20 @@ public class MainActivity extends AppCompatActivity{
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+
+        //when clicked in the drawer
+        /*int id = item.getItemId();
+        Log.d("showId",String.valueOf(id));
+
+        if(id==R.id.branches){
+            Toast.makeText(MainActivity.this, "Branches Selected",Toast.LENGTH_SHORT).show();
+        }
+        drawer.closeDrawer(GravityCompat.START);*/
+        return true;
     }
 
 
@@ -286,6 +412,17 @@ public class MainActivity extends AppCompatActivity{
 
     }
 
+    public class DrawerItemClickListener implements ListView.OnItemClickListener{
+
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            Log.d("selected","selected");
+        }
+    }
+
+
+
+
     public class GetData extends AsyncTask<String, Integer, JSONObject> {
 
         //get request to a google sheet
@@ -310,18 +447,32 @@ public class MainActivity extends AppCompatActivity{
                         public void onResponse(JSONObject response) {
                             try {
                                 JSONArray arr = response.getJSONArray("Sheet1");
+
+                                //progressbar for syncing dawai
+                                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                                dawaiLoadingDialog.setVisibility(View.GONE);
+
+
+                                db=helper.getReadableDatabase();
+                                db.delete("DAWAI",null,null);
+
+                                saveToDB(response);
+
                             } catch (JSONException e) {
                                 Log.d("Error.Response", "fail");
                                 e.printStackTrace();
                             }
                             finalResponse= response;
+
                         }
                     },
                     new Response.ErrorListener()
                     {
                         @Override
                         public void onErrorResponse(VolleyError error) {
-                            Toast.makeText(MainActivity.this,"Sync Not Completed. Try Again",Toast.LENGTH_SHORT).show();
+                            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                            dawaiLoadingDialog.setVisibility(View.GONE);
+                            Toast.makeText(MainActivity.this,"New Data not updated",Toast.LENGTH_SHORT).show();
                             Log.d("Error.Response", String.valueOf(error));
                         }
                     }
@@ -329,28 +480,22 @@ public class MainActivity extends AppCompatActivity{
 
             queue.add(getRequest);
 
-            try {
-                //wait time for json response
-                Thread.sleep(10000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
+            mResponse=finalResponse;
             return finalResponse;
         }
 
         @Override
         protected void onPreExecute(){
             //show progress dialog
-            progressDialog= ProgressDialog.show(MainActivity.this,"Fetching Data","Wait");
+            //progressDialog= ProgressDialog.show(MainActivity.this,"Fetching Data","Wait");
         }
 
         @Override
         protected void onPostExecute(JSONObject response){
-            progressDialog.dismiss();
-            mResponse=response;
+            //progressDialog.dismiss();
+           /* mResponse=response;
             Log.d("Response",response.toString());
-            saveToDB(mResponse);
+            saveToDB(mResponse);*/
         }
 
         @Override
@@ -362,7 +507,7 @@ public class MainActivity extends AppCompatActivity{
     @Override
     public void onDestroy(){
         super.onDestroy();
-
     }
+
 
 }

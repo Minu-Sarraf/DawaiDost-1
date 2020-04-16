@@ -18,53 +18,36 @@
         app:layout_constraintTop_toTopOf="parent"
         app:navGraph="@navigation/mobile_navigation" />
 
-    <com.mancj.materialsearchbar.MaterialSearchBar
-        app:speechMode="false"
-        app:hint="Search Medicine"
-        app:maxSuggestionsCount="10"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/searchBar"/>
+        android:id="@+id/searchBy"
+        android:orientation="horizontal">
 
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/searchBar"
-        android:id="@+id/searchBy">
+        <com.mancj.materialsearchbar.MaterialSearchBar
+            app:speechMode="false"
+            app:hint="Search"
+            app:maxSuggestionsCount="10"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/searchBar"
+            android:layout_weight="6"/>
 
         <com.jaredrummler.materialspinner.MaterialSpinner
             android:id="@+id/spinner"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Search By"
-            android:layout_toLeftOf="@id/spinner"
-            android:layout_toStartOf="@id/spinner"
-            android:layout_marginRight="12dp"
-            android:layout_marginEnd="8dp"
-            android:textSize="18sp"
-            android:textColor="@color/dark"/>
+            android:layout_gravity="center"
+            android:layout_weight="14"/>
 
 
-    </RelativeLayout>
-
-    <ListView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/list_view"
-        android:paddingTop="@dimen/activity_horizontal_margin"
-        android:layout_below="@id/searchBy"/>
+    </LinearLayout>
 
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="@dimen/activity_horizontal_margin"
+        android:padding="@dimen/horizontal_padding"
         android:id="@+id/recycler_view1"
         android:layout_marginTop="12dp"
         android:layout_below="@id/searchBy"/>
