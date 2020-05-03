@@ -99,7 +99,7 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
         //indicate type n brand
         holder.textView2.setText("Type: " + tp+",  Brand: "+bd);
         //add to cart image
-        holder.imageView.setImageResource(R.drawable.add_cart);
+        holder.imageView.setImageResource(R.mipmap.add_cart);
 
     }
 

@@ -6,7 +6,18 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_home"
-            android:icon="@drawable/home"
+            android:icon="@mipmap/home"
             android:title="@string/menu_home" />
+
+        <item
+            android:id="@+id/nav_branches"
+            android:icon="@mipmap/branch_icon"
+            android:title="Branches" />
+
+        <item
+            android:id="@+id/nav_cart"
+            android:icon="@mipmap/add_cart"
+            android:title="My Cart" />
+
     </group>
 </menu>

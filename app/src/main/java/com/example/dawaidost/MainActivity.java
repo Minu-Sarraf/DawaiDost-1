@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
@@ -27,6 +28,7 @@ import android.view.Menu;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -65,18 +67,6 @@ import java.util.Locale;
 
 //https://www.google.com/maps/place/Dawai+Dost+-+1+-+Upper+Bazaar/@23.376317,85.3170739,15z/data=!4m5!3m4!1s0x0:0xdabe8770a0909b0!8m2!3d23.376317!4d85.3170739
 
-//to be done
-// 1. change color
-// 2. UI of search                              "Done"
-// 3. make email work with ip n location        "Done"
-// 4. remove gallery n all                      "Done"
-// 5. layout of your cart and showlist          "Done"
-// 6. y code s different for database           "Ask"
-// 7. add branches                              "Leave it"
-// 8. add splash screen                         "Done"
-// 9. load database everyday                    "Leave it"
-// 10. add back button                          "Done"
-// 11. internet status                          "Done"
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
@@ -178,7 +168,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.branches)
+                R.id.nav_home)
                 .setDrawerLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
@@ -195,18 +185,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
         //material spinner for selecting search type
-        spinner = findViewById(R.id.spinner);
+/*        spinner = findViewById(R.id.spinner);
         spinner.setItems("Code", "Type", "Brand", "Generic");
         spinner.setOnItemSelectedListener(new MaterialSpinner.OnItemSelectedListener<String>() {
             @Override
             public void onItemSelected(MaterialSpinner view, int position, long id, String item) {
                 selectSearch= item;
             }
-        });
+        });*/
 
 
         //search  bar
         materialSearchBar = findViewById(R.id.searchBar);
+        materialSearchBar.enableSearch();
         materialSearchBar.addTextChangeListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -215,21 +206,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-                //search action when selected from spinner
-                if (selectSearch==null)
-                    selectSearch="Code";
-                Log.e("type", selectSearch);
-                if(selectSearch.equals("Type")){
-                    showList(1,0);
-                }else if (selectSearch.equals("Brand")){
-                    showList(2,0);
-                }else if (selectSearch.equals("Generic")){
-                    showList(3,0);
-                }else{
-                    //search length 3 for code search
-                    showList(0,2);
-                }
+                showList();
             }
 
             @Override
@@ -240,7 +217,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
-    public void showList(int value, int searchLength ){
+    public void showList(){
+
+        int searchLength=3;
 
         //extracting data from database
         db=helper.getReadableDatabase();
@@ -248,22 +227,35 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 new String[] {"CODE","TYPE","BRANDNAME","GENERIC"},
                 null,null,null,null,null);
 
-        if(materialSearchBar.getText().length()<=searchLength){
+        if(materialSearchBar.getText().length()<searchLength){
             //when search length is not enough
             ArrayList<String> nothing = new ArrayList<>();
             CustomAdapter customAdapter = new CustomAdapter(getApplicationContext(),nothing,nothing,nothing,nothing);
             recyclerView.setAdapter(customAdapter);
 
+            ImageView imageView = findViewById(R.id.home_page);
+            imageView.setVisibility(View.VISIBLE);
+
         }else{
             //search length is reached.
+
+            ImageView imageView = findViewById(R.id.home_page);
+            imageView.setVisibility(View.INVISIBLE);
+
             ArrayList<String> code = new ArrayList<>();
             ArrayList<String> type = new ArrayList<>();
             ArrayList<String> brand = new ArrayList<>();
             ArrayList<String> generic = new ArrayList<>();
 
             boolean cursorValue = cursor.moveToFirst();
+            String c,t,b,g;
             while(cursorValue){
-                if (cursor.getString(value).contains(materialSearchBar.getText().toUpperCase(Locale.ENGLISH))){
+                c=cursor.getString(0);
+                t=cursor.getString(1);
+                b=cursor.getString(2);
+                g=cursor.getString(3);
+                String mText=materialSearchBar.getText().toUpperCase(Locale.ENGLISH);
+                if (c.contains(mText) || t.contains(mText)|| b.contains(mText) || g.contains(mText)){
                     code.add(cursor.getString(0));
                     type.add(cursor.getString(1));
                     brand.add(cursor.getString(2));
@@ -293,7 +285,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         int id= item.getItemId();
 
-        if (id==R.id.SyncDawai){
+/*        if (id==R.id.SyncDawai){
 
             //check internet connection
             boolean connected = false;
@@ -325,7 +317,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
 
 
-        }else if(id == R.id.branches){
+        }else */if(id == R.id.branches){
             Intent intent = new Intent(MainActivity.this, Branches.class);
             startActivity(intent);
         }
@@ -370,7 +362,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 try{
                     //extracting data from json response
                     finalObject=array.getJSONObject(count);
-                    Log.e("finObj",finalObject.toString());
+                    //Log.e("finObj",finalObject.toString());
 
                     String code = String.valueOf(finalObject.get("CODE"));
                     String type = String.valueOf(finalObject.get("TYPE"));
@@ -378,8 +370,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     String generic = String.valueOf(finalObject.get("GENERIC"));
                     String company = String.valueOf(finalObject.get("COMPANY"));
                     String packing = String.valueOf(finalObject.get("PACKING"));
-                    Integer mrp = Integer.parseInt(finalObject.get("MRP").toString());
-                    Integer price = Integer.valueOf(String.valueOf(finalObject.get("PRICE")));
+                    Float mrp = Float.valueOf((finalObject.get("MRP").toString()));
+                    Float price = Float.valueOf(String.valueOf(finalObject.get("PRICE")));
                     Integer maxOrder = Integer.valueOf(String.valueOf(finalObject.get("MAXORDER")));
                     Log.d("print",code);
 

@@ -22,8 +22,8 @@ public class Database extends SQLiteOpenHelper {
                 "GENERIC TEXT,"+
                 "COMPANY TEXT,"+
                 "PACKING TEXT,"+
-                "MRP INTEGER,"+
-                "PRICE INTEGER,"+
+                "MRP FLOAT,"+
+                "PRICE FLOAT,"+
                 "MAXORDER INTEGER)");
 
         //table for saving order

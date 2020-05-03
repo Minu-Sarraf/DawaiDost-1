@@ -57,7 +57,7 @@ public class ShowCart extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_cart);
-        setTitle("Your Cart");
+        setTitle("My Cart");
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
