@@ -3,23 +3,17 @@ package com.example.dawaidost;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -31,7 +25,6 @@ import android.text.format.Formatter;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -40,6 +33,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.net.URI;
 import java.util.ArrayList;
 
 public class ShowCart extends AppCompatActivity {
@@ -124,7 +118,7 @@ public class ShowCart extends AppCompatActivity {
                     connected = false;
                 }
 
-                if (connected == false){
+                if (!connected){
                     Toast.makeText(ShowCart.this, "No Internet Connection",Toast.LENGTH_SHORT).show();
                 }else{
                     //export the database into csv file
@@ -219,11 +213,10 @@ public class ShowCart extends AppCompatActivity {
         Log.d("paths",path);
 
         try {
-            new File(path  ).mkdir();
+            boolean mFile = new File(path).mkdir();
+
             myFile = new File(path+"order.csv");
-            //Log.d("Datases","1");
-            myFile.createNewFile();
-            //Log.d("Datases","2");
+            //myFile.createNewFile();
 
             FileOutputStream fOut = new FileOutputStream(myFile);
             OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
@@ -257,6 +250,7 @@ public class ShowCart extends AppCompatActivity {
 
             myOutWriter.close();
             fOut.close();
+            cursor.close();
 
         } catch (SQLiteException e) {
             Log.e("okas","Could not create or Open the database");
@@ -266,18 +260,21 @@ public class ShowCart extends AppCompatActivity {
 
     //sending mail
     public void sendmail(){
-
-        String path = "file:///"+Environment.getExternalStorageDirectory().getAbsolutePath()+"/DawaiDost/order.csv";
-        Log.d("path",path);
-        Uri uri = Uri.parse(path);
-
+        String filename = "order.csv";
+        File filelocation = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/DawaiDost/", filename);
+        Uri uri = FileProvider.getUriForFile(ShowCart.this,BuildConfig.APPLICATION_ID+".provider",filelocation);
+        Log.d("path", String.valueOf(filelocation));
+        //Uri uri = Uri.parse(path);
+        //Log.d("help", String.valueOf(uri));
 
         Intent intent = new Intent(Intent.ACTION_SEND);
-        intent.setType("*/*");
+        intent.setType("vnd.android.cursor.dir/email");
         intent.putExtra(Intent.EXTRA_EMAIL, new String[] {"minusarraf96@gmail.com"});
         intent.putExtra(Intent.EXTRA_SUBJECT, "Order");
         intent.putExtra(Intent.EXTRA_TEXT,"MAC ADDRESS:"+address+"\n"+"IP ADDRESS:"+ip);
         intent.putExtra(Intent.EXTRA_STREAM, uri);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
