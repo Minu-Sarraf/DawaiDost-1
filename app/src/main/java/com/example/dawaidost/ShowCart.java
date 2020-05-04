@@ -67,10 +67,8 @@ public class ShowCart extends AppCompatActivity {
         address = info.getMacAddress();
         ip = Formatter.formatIpAddress(manager.getConnectionInfo().getIpAddress());
 
-        /*Log.d("mac",address);
-        Log.d("mac", ip);*/
 
-        //getting location
+/*        //getting location
         LocationListener listener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
@@ -105,13 +103,15 @@ public class ShowCart extends AppCompatActivity {
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        mLoc.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);
+        mLoc.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);*/
 
         //floating action button to send mail
         FloatingActionButton fb= findViewById(R.id.fab);
         fb.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                Log.d("works","works");
 
                 //check internet connection
                 boolean connected = false;
@@ -264,6 +264,7 @@ public class ShowCart extends AppCompatActivity {
 
     }
 
+    //sending mail
     public void sendmail(){
 
         String path = "file:///"+Environment.getExternalStorageDirectory().getAbsolutePath()+"/DawaiDost/order.csv";
@@ -275,7 +276,7 @@ public class ShowCart extends AppCompatActivity {
         intent.setType("*/*");
         intent.putExtra(Intent.EXTRA_EMAIL, new String[] {"minusarraf96@gmail.com"});
         intent.putExtra(Intent.EXTRA_SUBJECT, "Order");
-        intent.putExtra(Intent.EXTRA_TEXT,"MAC ADDRESS:"+address+"\n"+"IP ADDRESS:"+ip+"\n"+"LATITUDE:"+latitude+"\n"+"LONGITUDE"+longitude);
+        intent.putExtra(Intent.EXTRA_TEXT,"MAC ADDRESS:"+address+"\n"+"IP ADDRESS:"+ip);
         intent.putExtra(Intent.EXTRA_STREAM, uri);
 
         if (intent.resolveActivity(getPackageManager()) != null) {

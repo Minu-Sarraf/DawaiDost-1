@@ -10,8 +10,10 @@
 
     <ImageView
         android:id="@+id/splash_screen"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@mipmap/logo" />
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="150dp"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:src="@mipmap/dawai_dost_logo" />
 
 </LinearLayout>

@@ -49,7 +49,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.MyViewHolder> 
 
         }
 
-        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+        //@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         @Override
         public void onClick(View view) {
             int position=getAdapterPosition();

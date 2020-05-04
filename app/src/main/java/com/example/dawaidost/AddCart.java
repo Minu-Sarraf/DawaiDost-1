@@ -21,11 +21,13 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 
 import java.util.ArrayList;
+//371592
 
 public class AddCart extends AppCompatActivity implements View.OnClickListener {
 
     TextView tv1, tv2, tv3, tv4,tv5,tv6;
-    String code, type, brand, generic, company, price, mrp;
+    String code, type, brand, generic, company;
+    Float price, mrp;
     int noOrder=1;
     SQLiteOpenHelper helper = new Database(AddCart.this);
     SQLiteDatabase db;
@@ -64,8 +66,8 @@ public class AddCart extends AppCompatActivity implements View.OnClickListener {
 
         if (cursor.moveToFirst()){
             company=(cursor.getString(1));
-            price=(cursor.getString(3));
-            mrp=cursor.getString(2);
+            price=(cursor.getFloat(3));
+            mrp=cursor.getFloat(2);
         }
 
         tv1.setText(code);

@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class Database extends SQLiteOpenHelper {
-    public static String DB_NAME="DAWAI";
+    public static String DB_NAME="DAWAIX";
     public static int DB_VERSION=1;
 
     Database(Context context){
@@ -32,7 +32,7 @@ public class Database extends SQLiteOpenHelper {
                 "BRANDNAME TEXT,"+
                 "GENERIC TEXT,"+
                 "COMPANY TEXT,"+
-                "PRICE TEXT,"+
+                "PRICE FLOAT,"+
                 "MAXORDER INTEGER)");
     }
 
