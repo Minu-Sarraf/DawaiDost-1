@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:showIn="@layout/app_bar_main">
+    tools:showIn="@layout/app_bar_main" >
 
     <fragment
         android:id="@+id/nav_host_fragment"
@@ -18,20 +18,24 @@
         app:layout_constraintTop_toTopOf="parent"
         app:navGraph="@navigation/mobile_navigation" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/searchBy"
-        android:orientation="horizontal">
 
-        <com.mancj.materialsearchbar.MaterialSearchBar
+        <!--<com.mancj.materialsearchbar.MaterialSearchBar
             app:speechMode="false"
             app:hint="Search Medicines"
             app:maxSuggestionsCount="10"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/searchBar"
-            android:layout_weight="6"/>
+            android:layout_weight="6"/>-->
+
+    <SearchView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/searchView"
+        android:iconifiedByDefault="false"
+        android:queryHint="Search Medicine"
+        android:autofillHints="Search Medicine"
+        android:focusable="false" />
 
 <!--
         <com.jaredrummler.materialspinner.MaterialSpinner
@@ -42,24 +46,20 @@
             android:layout_weight="14"/>
 -->
 
-    </LinearLayout>
-
 
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="@dimen/horizontal_padding"
-        android:id="@+id/recycler_view1"
-        android:layout_marginTop="12dp"
-        android:layout_below="@id/searchBy"/>
+        android:layout_below="@id/searchView"
+        android:padding="@dimen/horizontal_padding" />
 
     <ImageView
+        android:id="@+id/home_page"
         android:layout_width="match_parent"
         android:layout_height="500dp"
-        android:padding="@dimen/horizontal_padding"
-        android:id="@+id/home_page"
-        android:layout_marginTop="12dp"
-        android:layout_below="@id/searchBy" />
+        android:layout_below="@id/searchView"
+        android:padding="@dimen/horizontal_padding"/>
 
 
 </RelativeLayout>

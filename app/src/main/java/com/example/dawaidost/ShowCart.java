@@ -214,8 +214,10 @@ public class ShowCart extends AppCompatActivity {
 
         try {
             boolean mFile = new File(path).mkdir();
+            Log.d("direct",String.valueOf(mFile));
 
             myFile = new File(path+"order.csv");
+            Log.d("path", String.valueOf(myFile));
             //myFile.createNewFile();
 
             FileOutputStream fOut = new FileOutputStream(myFile);
@@ -264,8 +266,6 @@ public class ShowCart extends AppCompatActivity {
         File filelocation = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/DawaiDost/", filename);
         Uri uri = FileProvider.getUriForFile(ShowCart.this,BuildConfig.APPLICATION_ID+".provider",filelocation);
         Log.d("path", String.valueOf(filelocation));
-        //Uri uri = Uri.parse(path);
-        //Log.d("help", String.valueOf(uri));
 
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("vnd.android.cursor.dir/email");

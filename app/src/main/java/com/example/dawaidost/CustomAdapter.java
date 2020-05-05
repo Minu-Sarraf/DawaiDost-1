@@ -51,8 +51,8 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
             int position=getAdapterPosition();
             switch(view.getId()){
                 case R.id.row:
-                    break;
-                case R.id.image:
+/*                    break;
+                case R.id.image:*/
                     //go to add cart page
                     Log.d("code",code.get(position));
                     Intent intent = new Intent(context, AddCart.class);

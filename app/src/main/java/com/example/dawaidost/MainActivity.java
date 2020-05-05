@@ -31,6 +31,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -65,29 +66,27 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Locale;
 
-//https://www.google.com/maps/place/Dawai+Dost+-+1+-+Upper+Bazaar/@23.376317,85.3170739,15z/data=!4m5!3m4!1s0x0:0xdabe8770a0909b0!8m2!3d23.376317!4d85.3170739
 
-
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
+public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
 
     SQLiteOpenHelper helper = new Database(MainActivity.this);
     SQLiteDatabase db;
-    private MaterialSearchBar materialSearchBar;
-    MaterialSpinner spinner;
-    String selectSearch;
     RecyclerView recyclerView;
     ProgressBar dawaiLoadingDialog;
     JSONObject mResponse;
     static boolean synced = false;
     DrawerLayout drawer;
 
+    SearchView searchView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //sync everytime you open the app
 /*        if (synced==false){
             //Show progressbar while volley request is serviced
             dawaiLoadingDialog = new ProgressBar(this,null,android.R.attr.progressBarStyleLargeInverse);
@@ -102,6 +101,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             getData.execute("hello");
             synced=!synced;
         }*/
+
+
+        //supress keyboard on app opening
+        getWindow().setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
+        );
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -162,9 +167,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
+        //navigation view
         drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
@@ -183,41 +188,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         recyclerView.setLayoutManager(layoutManager);
 
 
-
-        //material spinner for selecting search type
-/*        spinner = findViewById(R.id.spinner);
-        spinner.setItems("Code", "Type", "Brand", "Generic");
-        spinner.setOnItemSelectedListener(new MaterialSpinner.OnItemSelectedListener<String>() {
+        //serach view and searching data
+        searchView = findViewById(R.id.searchView);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
-            public void onItemSelected(MaterialSpinner view, int position, long id, String item) {
-                selectSearch= item;
-            }
-        });*/
-
-
-        //search  bar
-        materialSearchBar = findViewById(R.id.searchBar);
-        materialSearchBar.enableSearch();
-        materialSearchBar.addTextChangeListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
+            public boolean onQueryTextSubmit(String query) {
+                return false;
             }
 
             @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                showList();
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
+            public boolean onQueryTextChange(String newText) {
+                showList(newText);
+                return false;
             }
         });
 
     }
 
-    public void showList(){
+    //show the matched list of dawais
+    public void showList(String mText){
 
         int searchLength=3;
 
@@ -227,18 +216,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 new String[] {"CODE","TYPE","BRANDNAME","GENERIC"},
                 null,null,null,null,null);
 
-        if(materialSearchBar.getText().length()<searchLength){
-            //when search length is not enough
+        if(mText.length()<searchLength){   //when search length is not enough
             ArrayList<String> nothing = new ArrayList<>();
             CustomAdapter customAdapter = new CustomAdapter(getApplicationContext(),nothing,nothing,nothing,nothing);
             recyclerView.setAdapter(customAdapter);
 
+            //home page image
             ImageView imageView = findViewById(R.id.home_page);
             imageView.setVisibility(View.VISIBLE);
 
         }else{
             //search length is reached.
 
+            //home page image
             ImageView imageView = findViewById(R.id.home_page);
             imageView.setVisibility(View.INVISIBLE);
 
@@ -254,8 +244,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 t=cursor.getString(1);
                 b=cursor.getString(2);
                 g=cursor.getString(3);
-                String mText=materialSearchBar.getText().toUpperCase(Locale.ENGLISH);
-                if (c.contains(mText) || t.contains(mText)|| b.contains(mText) || g.contains(mText)){
+                String sText=mText.toUpperCase(Locale.ENGLISH);
+                if (c.contains(sText) || t.contains(sText)|| b.contains(sText) || g.contains(sText)){
                     code.add(cursor.getString(0));
                     type.add(cursor.getString(1));
                     brand.add(cursor.getString(2));
@@ -267,7 +257,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             //populating recycler view
             CustomAdapter customAdapter = new CustomAdapter(MainActivity.this,code,type,brand,generic);
-
             recyclerView.setAdapter(customAdapter);
 
         }
@@ -285,39 +274,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         int id= item.getItemId();
 
-/*        if (id==R.id.SyncDawai){
-
-            //check internet connection
-            boolean connected = false;
-            ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-            if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
-                    connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
-                connected = true;
-            }
-            else{
-                connected = false;
-            }
-
-            //show no connection page
-            if (connected==false){
-                Toast.makeText(MainActivity.this,"No Internet Connection",Toast.LENGTH_SHORT).show();
-            } else {
-
-                //Show progressbar while volley request is serviced
-                dawaiLoadingDialog = new ProgressBar(this,null,android.R.attr.progressBarStyleLargeInverse);
-                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
-                params.gravity = Gravity.CENTER;
-                ((FrameLayout)getWindow().getDecorView().findViewById(android.R.id.content)).addView(dawaiLoadingDialog,params);
-                dawaiLoadingDialog.setVisibility(View.VISIBLE);  //To show ProgressBar
-                getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-
-                GetData getData = new GetData();
-                getData.execute("hello");
-            }
-
-
-        }else */if(id == R.id.branches){
+        if(id == R.id.branches){
             Intent intent = new Intent(MainActivity.this, Branches.class);
             startActivity(intent);
         }
@@ -330,20 +287,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-
-        //when clicked in the drawer
-        /*int id = item.getItemId();
-        Log.d("showId",String.valueOf(id));
-
-        if(id==R.id.branches){
-            Toast.makeText(MainActivity.this, "Branches Selected",Toast.LENGTH_SHORT).show();
-        }
-        drawer.closeDrawer(GravityCompat.START);*/
-        return true;
     }
 
 
@@ -404,13 +347,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
-    public class DrawerItemClickListener implements ListView.OnItemClickListener{
-
-        @Override
-        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-            Log.d("selected","selected");
-        }
-    }
 
 
 
@@ -478,16 +414,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         @Override
         protected void onPreExecute(){
-            //show progress dialog
-            //progressDialog= ProgressDialog.show(MainActivity.this,"Fetching Data","Wait");
+
         }
 
         @Override
         protected void onPostExecute(JSONObject response){
-            //progressDialog.dismiss();
-           /* mResponse=response;
-            Log.d("Response",response.toString());
-            saveToDB(mResponse);*/
+
         }
 
         @Override
