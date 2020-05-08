@@ -3,17 +3,22 @@ package com.example.dawaidost;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -25,6 +30,9 @@ import android.text.format.Formatter;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -60,6 +68,17 @@ public class ShowCart extends AppCompatActivity {
         WifiInfo info = manager.getConnectionInfo();
         address = info.getMacAddress();
         ip = Formatter.formatIpAddress(manager.getConnectionInfo().getIpAddress());
+
+        //onclick add medicine
+        Button button = findViewById(R.id.add_medicine);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ShowCart.this,MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+            }
+        });
 
 
 /*        //getting location
@@ -104,40 +123,43 @@ public class ShowCart extends AppCompatActivity {
         fb.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                Log.d("works","works");
-
-                //check internet connection
-                boolean connected = false;
-                ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-                if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
-                        connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
-                    connected = true;
-                }
-                else{
-                    connected = false;
-                }
-
-                if (!connected){
-                    Toast.makeText(ShowCart.this, "No Internet Connection",Toast.LENGTH_SHORT).show();
+                if(ContextCompat.checkSelfPermission(ShowCart.this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED){
+                    ActivityCompat.requestPermissions(ShowCart.this,
+                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},0);
                 }else{
-                    //export the database into csv file
-                    try {
-                        exportTheDB();
-                    } catch (IOException e) {
-                        e.printStackTrace();
+
+                    //check internet connection
+                    boolean connected = false;
+                    ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+                    if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                            connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+                        connected = true;
+                    }
+                    else{
+                        connected = false;
                     }
 
-                    //code to send mail
-                    sendmail();
+                    if (!connected){
+                        Toast.makeText(ShowCart.this, "No Internet Connection",Toast.LENGTH_SHORT).show();
+                    }else{
+                        //export the database into csv file
+                        try {
+                            exportTheDB();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
 
-                    //Toast.makeText(ShowCart.this,"Send Mail",Toast.LENGTH_SHORT).show();
-                    //delete all items from cart after sending mail
-                    SQLiteDatabase db = helper.getReadableDatabase();
-                    db.delete("CART",null,null);
+                        //code to send mail
+                        sendmail();
+
+                        //Toast.makeText(ShowCart.this,"Send Mail",Toast.LENGTH_SHORT).show();
+                        //delete all items from cart after sending mail
+                        SQLiteDatabase db = helper.getReadableDatabase();
+                        db.delete("CART",null,null);
+                    }
                 }
-
-
             }
         });
 
@@ -170,6 +192,7 @@ public class ShowCart extends AppCompatActivity {
 
         if (code.size()==0){
 
+/*
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("No Items on cart");
 
@@ -185,7 +208,14 @@ public class ShowCart extends AppCompatActivity {
                 }
             });
 
-            builder.create().show();
+            builder.create().show();*/
+            ImageView image = findViewById(R.id.no_item);
+            image.setVisibility(View.VISIBLE);
+
+            RelativeLayout relativeLayout = findViewById(R.id.relative_layout);
+            relativeLayout.setVisibility(View.VISIBLE);
+
+            fb.setVisibility(View.INVISIBLE);
         }
 
         final RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -224,7 +254,7 @@ public class ShowCart extends AppCompatActivity {
             OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
 
             //giving the column names
-            myOutWriter.append("CODE,TYPE,BRAND NAME,GENERIC,COMPANY,PRICE,QUANTITY");
+            myOutWriter.append("CODE,TYPE,BRAND NAME,GENERIC,COMPANY,PRICE,QUANTITY,IP Address,"+ip+",MAC Address,"+address);
             myOutWriter.append("\n");
 
             boolean cursorValue= cursor.moveToFirst();
@@ -271,13 +301,13 @@ public class ShowCart extends AppCompatActivity {
         intent.setType("vnd.android.cursor.dir/email");
         intent.putExtra(Intent.EXTRA_EMAIL, new String[] {"minusarraf96@gmail.com"});
         intent.putExtra(Intent.EXTRA_SUBJECT, "Order");
-        intent.putExtra(Intent.EXTRA_TEXT,"MAC ADDRESS:"+address+"\n"+"IP ADDRESS:"+ip);
         intent.putExtra(Intent.EXTRA_STREAM, uri);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
+            finish();
         }
     }
 

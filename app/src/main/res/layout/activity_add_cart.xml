@@ -10,6 +10,7 @@
     android:paddingLeft="16dp"
     android:paddingBottom="16dp"
     android:orientation="vertical"
+    android:background="@mipmap/background"
     tools:context=".AddCart">
 
     <LinearLayout
@@ -195,6 +196,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
         android:layout_margin="@dimen/fab_margin"
-       android:src="@mipmap/add_cart" />
+        android:src="@mipmap/add_cart"
+        android:tint="@android:color/white"/>
 
 </LinearLayout>

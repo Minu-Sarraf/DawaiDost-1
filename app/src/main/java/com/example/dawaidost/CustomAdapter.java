@@ -51,16 +51,22 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
             int position=getAdapterPosition();
             switch(view.getId()){
                 case R.id.row:
-/*                    break;
-                case R.id.image:*/
-                    //go to add cart page
-                    Log.d("code",code.get(position));
                     Intent intent = new Intent(context, AddCart.class);
                     intent.putExtra("Code",code.get(position));
                     intent.putExtra("Type",type.get(position));
                     intent.putExtra("Brand",brand.get(position));
                     intent.putExtra("Generic",generic.get(position));
                     context.startActivity(intent);
+                    break;
+                case R.id.image:
+                    //go to add cart page
+                    Log.d("code",code.get(position));
+                    Intent intent1 = new Intent(context, AddCart.class);
+                    intent1.putExtra("Code",code.get(position));
+                    intent1.putExtra("Type",type.get(position));
+                    intent1.putExtra("Brand",brand.get(position));
+                    intent1.putExtra("Generic",generic.get(position));
+                    context.startActivity(intent1);
 
                     break;
             }

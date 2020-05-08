@@ -8,8 +8,8 @@
             android:id="@+id/nav_home"
             android:icon="@mipmap/home"
             android:title="@string/menu_home" />
-
         <item
+
             android:id="@+id/nav_branches"
             android:icon="@mipmap/branch_icon"
             android:title="Branches" />
@@ -20,4 +20,6 @@
             android:title="My Cart" />
 
     </group>
+
+
 </menu>

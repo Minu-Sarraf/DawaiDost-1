@@ -1,5 +1,6 @@
 package com.example.dawaidost;
 
+import android.Manifest;
 import android.app.ActionBar;
 import android.app.LauncherActivity;
 import android.app.ProgressDialog;
@@ -7,6 +8,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
@@ -46,6 +48,9 @@ import com.jaredrummler.materialspinner.MaterialSpinner;
 import com.mancj.materialsearchbar.MaterialSearchBar;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -67,7 +72,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private AppBarConfiguration mAppBarConfiguration;
 
@@ -103,10 +108,10 @@ public class MainActivity extends AppCompatActivity {
         }*/
 
 
-        //supress keyboard on app opening
+/*        //supress keyboard on app opening
         getWindow().setSoftInputMode(
                 WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
-        );
+        );*/
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -146,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
                 GetData getData = new GetData();
                 getData.execute("hello");
 
+
                 getSharedPreferences("BOOT_PREF",MODE_PRIVATE)
                         .edit()
                         .putBoolean("firstBoot",false)
@@ -169,7 +175,12 @@ public class MainActivity extends AppCompatActivity {
 
         //navigation view
         drawer = findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this,drawer,toolbar,R.string.navigation_drawer_open,R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
+
         NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(MainActivity.this);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
@@ -225,12 +236,18 @@ public class MainActivity extends AppCompatActivity {
             ImageView imageView = findViewById(R.id.home_page);
             imageView.setVisibility(View.VISIBLE);
 
+            ImageView imageView1 = findViewById(R.id.home_page2);
+            imageView1.setVisibility(View.VISIBLE);
+
         }else{
             //search length is reached.
 
             //home page image
             ImageView imageView = findViewById(R.id.home_page);
             imageView.setVisibility(View.INVISIBLE);
+
+            ImageView imageView1 = findViewById(R.id.home_page2);
+            imageView1.setVisibility(View.INVISIBLE);
 
             ArrayList<String> code = new ArrayList<>();
             ArrayList<String> type = new ArrayList<>();
@@ -291,7 +308,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void saveToDB(JSONObject mResponse){
-
         //saving data from google sheet into database
 
         try {
@@ -347,8 +363,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
-
+        return true;
+    }
 
 
     public class GetData extends AsyncTask<String, Integer, JSONObject> {
