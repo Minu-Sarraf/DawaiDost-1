@@ -83,7 +83,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="10dp"
             android:text="Upto 85% Discount on Generic Medicines"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:textColor="@android:color/black"
             android:textStyle="bold"/>
 
