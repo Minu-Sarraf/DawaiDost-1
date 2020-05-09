@@ -63,7 +63,7 @@
         android:src="@mipmap/samajhdar"/>
 
     <ImageView
-        android:layout_width=""
+        android:layout_width="match_parent"
         android:layout_height="100dp"
         android:id="@+id/home_page2"
         android:layout_below="@id/home_page"
