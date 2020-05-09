@@ -31,8 +31,10 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -92,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
 
         //sync everytime you open the app
-/*        if (synced==false){
+        if (synced==false){
             //Show progressbar while volley request is serviced
             dawaiLoadingDialog = new ProgressBar(this,null,android.R.attr.progressBarStyleLargeInverse);
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
@@ -105,13 +107,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             GetData getData = new GetData();
             getData.execute("hello");
             synced=!synced;
-        }*/
+        }
 
-
-/*        //supress keyboard on app opening
-        getWindow().setSoftInputMode(
-                WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
-        );*/
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -232,22 +229,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             CustomAdapter customAdapter = new CustomAdapter(getApplicationContext(),nothing,nothing,nothing,nothing);
             recyclerView.setAdapter(customAdapter);
 
-            //home page image
+/*            //home page image
             ImageView imageView = findViewById(R.id.home_page);
             imageView.setVisibility(View.VISIBLE);
 
             ImageView imageView1 = findViewById(R.id.home_page2);
-            imageView1.setVisibility(View.VISIBLE);
+            imageView1.setVisibility(View.VISIBLE);*/
+
+            LinearLayout relativeLayout = findViewById(R.id.relativeLayout);
+            relativeLayout.setVisibility(View.VISIBLE);
 
         }else{
             //search length is reached.
 
-            //home page image
+            LinearLayout relativeLayout = findViewById(R.id.relativeLayout);
+            relativeLayout.setVisibility(View.INVISIBLE);
+
+/*            //home page image
             ImageView imageView = findViewById(R.id.home_page);
             imageView.setVisibility(View.INVISIBLE);
 
             ImageView imageView1 = findViewById(R.id.home_page2);
-            imageView1.setVisibility(View.INVISIBLE);
+            imageView1.setVisibility(View.INVISIBLE);*/
 
             ArrayList<String> code = new ArrayList<>();
             ArrayList<String> type = new ArrayList<>();
