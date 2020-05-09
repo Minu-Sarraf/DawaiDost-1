@@ -70,7 +70,7 @@ public class ShowCart extends AppCompatActivity {
         ip = Formatter.formatIpAddress(manager.getConnectionInfo().getIpAddress());
 
         //onclick add medicine
-        Button button = findViewById(R.id.add_medicine);
+/*        Button button = findViewById(R.id.add_medicine);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -78,7 +78,7 @@ public class ShowCart extends AppCompatActivity {
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
             }
-        });
+        });*/
 
 
 /*        //getting location
