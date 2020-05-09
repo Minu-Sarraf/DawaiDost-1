@@ -31,8 +31,10 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -92,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
 
         //sync everytime you open the app
-/*        if (synced==false){
+        if (synced==false){
             //Show progressbar while volley request is serviced
             dawaiLoadingDialog = new ProgressBar(this,null,android.R.attr.progressBarStyleLargeInverse);
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
@@ -105,16 +107,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             GetData getData = new GetData();
             getData.execute("hello");
             synced=!synced;
-        }*/
-
-
-/*        //supress keyboard on app opening
-        getWindow().setSoftInputMode(
-                WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
-        );*/
-
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        }
 
         //check internet connection
         boolean connected = false;
@@ -173,18 +166,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         //navigation view
         drawer = findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this,drawer,toolbar,R.string.navigation_drawer_open,R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(MainActivity.this,drawer,toolbar,R.string.navigation_drawer_open,R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
         toggle.syncState();
 
         NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(MainActivity.this);
+        navigationView.setNavigationItemSelectedListener(this);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home)
+                R.id.nav_home,R.id.nav_branches,R.id.nav_cart)
                 .setDrawerLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
@@ -232,22 +228,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             CustomAdapter customAdapter = new CustomAdapter(getApplicationContext(),nothing,nothing,nothing,nothing);
             recyclerView.setAdapter(customAdapter);
 
-            //home page image
-            ImageView imageView = findViewById(R.id.home_page);
-            imageView.setVisibility(View.VISIBLE);
 
-            ImageView imageView1 = findViewById(R.id.home_page2);
-            imageView1.setVisibility(View.VISIBLE);
+            LinearLayout relativeLayout = findViewById(R.id.relativeLayout);
+            relativeLayout.setVisibility(View.VISIBLE);
 
         }else{
             //search length is reached.
 
-            //home page image
-            ImageView imageView = findViewById(R.id.home_page);
-            imageView.setVisibility(View.INVISIBLE);
+            LinearLayout relativeLayout = findViewById(R.id.relativeLayout);
+            relativeLayout.setVisibility(View.INVISIBLE);
 
-            ImageView imageView1 = findViewById(R.id.home_page2);
-            imageView1.setVisibility(View.INVISIBLE);
 
             ArrayList<String> code = new ArrayList<>();
             ArrayList<String> type = new ArrayList<>();
@@ -297,6 +287,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(drawer.isDrawerOpen(GravityCompat.START)){
+            drawer.closeDrawer(GravityCompat.START);
+        }else{
+            super.onBackPressed();
+        }
     }
 
     @Override
@@ -365,6 +364,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id= item.getItemId();
+
+        Log.d("Clicked",String.valueOf(id));
+        if(id==R.id.nav_branches){
+            Toast.makeText(this,"branches",Toast.LENGTH_SHORT).show();
+        }
 
         return true;
     }

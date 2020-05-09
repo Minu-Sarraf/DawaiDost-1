@@ -4,15 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="center"
+    android:layout_gravity="center"
     android:orientation="vertical"
     android:background="@mipmap/background"
     tools:context=".Splash">
 
     <ImageView
         android:id="@+id/splash_screen"
-        android:layout_centerVertical="false"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="150dp"
+        android:layout_centerInParent="true"
         android:layout_width="200dp"
         android:layout_height="200dp"
         android:src="@mipmap/dawai_dost_logo" />
@@ -20,7 +20,8 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="100dp"
-        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+
         android:layout_below="@id/splash_screen"
         android:src="@mipmap/discount"/>
 
