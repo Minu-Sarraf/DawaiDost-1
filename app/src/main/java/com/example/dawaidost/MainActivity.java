@@ -93,21 +93,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //sync everytime you open the app
-        if (synced==false){
-            //Show progressbar while volley request is serviced
-            dawaiLoadingDialog = new ProgressBar(this,null,android.R.attr.progressBarStyleLargeInverse);
-            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
-            params.gravity = Gravity.CENTER;
-            ((FrameLayout)getWindow().getDecorView().findViewById(android.R.id.content)).addView(dawaiLoadingDialog,params);
-            dawaiLoadingDialog.setVisibility(View.VISIBLE);  //To show ProgressBar
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-
-            GetData getData = new GetData();
-            getData.execute("hello");
-            synced=!synced;
-        }
 
         //check internet connection
         boolean connected = false;
@@ -151,6 +136,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         .commit();
             }
 
+        }else{
+            //sync everytime you open the app
+            if (synced==false){
+                //Show progressbar while volley request is serviced
+                dawaiLoadingDialog = new ProgressBar(this,null,android.R.attr.progressBarStyleLargeInverse);
+                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
+                params.gravity = Gravity.CENTER;
+                ((FrameLayout)getWindow().getDecorView().findViewById(android.R.id.content)).addView(dawaiLoadingDialog,params);
+                dawaiLoadingDialog.setVisibility(View.VISIBLE);  //To show ProgressBar
+                getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+
+                GetData getData = new GetData();
+                getData.execute("hello");
+                synced=!synced;
+            }
         }
 
 
