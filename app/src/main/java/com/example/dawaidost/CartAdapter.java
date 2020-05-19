@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Build;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,19 +31,21 @@ import java.util.ArrayList;
 
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.MyViewHolder> {
 
-    private ArrayList<String> code, type, brand, generic = new ArrayList<>();
+    private ArrayList<String> code, generic = new ArrayList<>();
+    private ArrayList<Float> price = new ArrayList<>();
+    private ArrayList<Integer> maxOrder = new ArrayList<>();
     Context context;
     SQLiteDatabase db;
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
-        public TextView textView1, textView2,textCode;
+        public TextView textGeneric, textPrice,textCode;
         public ImageView imageView;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             textCode= (TextView) itemView.findViewById(R.id.code);
-            textView1 = (TextView) itemView.findViewById(R.id.text1);
-            textView2 = (TextView) itemView.findViewById(R.id.text2);
+            textGeneric = (TextView) itemView.findViewById(R.id.text1);
+            textPrice = (TextView) itemView.findViewById(R.id.text2);
             imageView = (ImageView) itemView.findViewById(R.id.image);
 
             imageView.setOnClickListener(this);
@@ -68,10 +71,9 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.MyViewHolder> 
                         public void onClick(DialogInterface dialog, int which) {
                             db.delete("CART","CODE=?",new String[] {cd});
                             dialog.dismiss();
-                            Intent intent1 = new Intent(context,MainActivity.class);
+                            Intent intent1 = new Intent(context,ShowCart.class);
                             intent1.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             context.startActivity(intent1);
-
                             Toast.makeText(context," DELETED",Toast.LENGTH_SHORT).show();
                         }
                     });
@@ -90,10 +92,10 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.MyViewHolder> 
 
     }
 
-    public CartAdapter(Context context,ArrayList<String> code, ArrayList<String> type, ArrayList<String> brand, ArrayList<String> generic){
+    public CartAdapter(Context context,ArrayList<String> code, ArrayList<Float> price, ArrayList<Integer> maxOrder, ArrayList<String> generic){
         this.code=code;
-        this.type=type;
-        this.brand= brand;
+        this.price=price;
+        this.maxOrder=maxOrder;
         this.generic= generic;
         this.context= context;
 
@@ -113,12 +115,12 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.MyViewHolder> 
     public void onBindViewHolder(@NonNull CartAdapter.MyViewHolder holder, int position) {
 
         String cd = code.get(position);
-        String tp = type.get(position);
-        String bd = brand.get(position);
+        Float prc = price.get(position);
+        Integer order = maxOrder.get(position);
         String gn = generic.get(position);
         holder.textCode.setText(cd+": ");
-        holder.textView1.setText(gn);
-        holder.textView2.setText(tp+" "+bd);
+        holder.textGeneric.setText(gn);
+        holder.textPrice.setText("Rs "+prc+" * "+order+" pcs = Rs "+prc*order);
         holder.imageView.setImageResource(R.drawable.delete);
 
     }
@@ -127,4 +129,5 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.MyViewHolder> 
     public int getItemCount() {
         return code.size();
     }
+
 }

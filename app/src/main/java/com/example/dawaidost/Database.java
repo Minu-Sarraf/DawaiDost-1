@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class Database extends SQLiteOpenHelper {
-    public static String DB_NAME="DAWAIX";
+    public static String DB_NAME="DX";
     public static int DB_VERSION=1;
 
     Database(Context context){
@@ -33,7 +33,8 @@ public class Database extends SQLiteOpenHelper {
                 "GENERIC TEXT,"+
                 "COMPANY TEXT,"+
                 "PRICE FLOAT,"+
-                "MAXORDER INTEGER)");
+                "MAXORDER INTEGER,"+
+                "TOTAL FLOAT)");
     }
 
     @Override

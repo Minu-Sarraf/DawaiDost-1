@@ -1,8 +1,10 @@
 package com.example.dawaidost;
 
+import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
@@ -13,11 +15,14 @@ import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -28,32 +33,47 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.text.format.Formatter;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.net.HttpRetryException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 public class ShowCart extends AppCompatActivity {
 
     SQLiteOpenHelper helper = new Database(ShowCart.this);
     ArrayList<String> code = new ArrayList<>();
-    ArrayList<String> type = new ArrayList<>();
-    ArrayList<String> brand = new ArrayList<>();
+    ArrayList<Float> price = new ArrayList<>();
+    ArrayList<Integer> maxOrder = new ArrayList<>();
     ArrayList<String> generic = new ArrayList<>();
     public CartAdapter adapter;
     String address, ip;
     double latitude, longitude;
+    Float totalPrice= Float.valueOf(0);
+    Cursor cursor;
+    boolean connected = false;
+
+    SharedPreferences sharedPreferences;
+    public static final String MYPREFERENCES="MyPrefs";
+    public static final String Name="nameKey";
+    public static final String Phone="phoneKey";
+    public static final String Address="addressKey";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +81,7 @@ public class ShowCart extends AppCompatActivity {
         setContentView(R.layout.activity_show_cart);
         setTitle("My Cart");
 
+        //back button
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         //getting ip address
@@ -69,17 +90,16 @@ public class ShowCart extends AppCompatActivity {
         address = info.getMacAddress();
         ip = Formatter.formatIpAddress(manager.getConnectionInfo().getIpAddress());
 
-        //onclick add medicine
-/*        Button button = findViewById(R.id.add_medicine);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(ShowCart.this,MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-            }
-        });*/
 
+        //check internet connection
+        ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+            connected = true;
+        }
+        else{
+            connected = false;
+        }
 
 /*        //getting location
         LocationListener listener = new LocationListener() {
@@ -118,59 +138,35 @@ public class ShowCart extends AppCompatActivity {
         }
         mLoc.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);*/
 
-        //floating action button to send mail
+        //floating action button to send data to sheet
         FloatingActionButton fb= findViewById(R.id.fab);
         fb.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                if(ContextCompat.checkSelfPermission(ShowCart.this,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED){
-                    ActivityCompat.requestPermissions(ShowCart.this,
-                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},0);
+            public void onClick(View v) {
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        postData();
+                    }
+                });
+                if(connected==true){
+                    t.start();
+                    Toast.makeText(ShowCart.this,"Order Sent",Toast.LENGTH_SHORT).show();
+                    finish();
                 }else{
-
-                    //check internet connection
-                    boolean connected = false;
-                    ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-                    if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
-                            connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
-                        connected = true;
-                    }
-                    else{
-                        connected = false;
-                    }
-
-                    if (!connected){
-                        Toast.makeText(ShowCart.this, "No Internet Connection",Toast.LENGTH_SHORT).show();
-                    }else{
-                        //export the database into csv file
-                        try {
-                            exportTheDB();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-
-                        //code to send mail
-                        sendmail();
-
-                        //Toast.makeText(ShowCart.this,"Send Mail",Toast.LENGTH_SHORT).show();
-                        //delete all items from cart after sending mail
-                        SQLiteDatabase db = helper.getReadableDatabase();
-                        db.delete("CART",null,null);
-                    }
+                    Snackbar.make(v,"Check Internet Connection",Snackbar.LENGTH_SHORT).show();
                 }
+
             }
         });
-
 
         try {
 
             //showing items in cart
             SQLiteDatabase db = helper.getReadableDatabase();
 
-            Cursor cursor = db.query("CART",
-                    new String[]{"CODE", "TYPE", "BRANDNAME", "GENERIC"},
+            cursor = db.query("CART",
+                    new String[]{"CODE","TYPE","BRANDNAME","GENERIC","COMPANY","PRICE", "MAXORDER", "TOTAL"},
                     null, null, null, null, null);
 
             //recycler view
@@ -178,37 +174,23 @@ public class ShowCart extends AppCompatActivity {
 
             while(cursorValue) {
                 code.add(cursor.getString(0));
-                type.add(cursor.getString(1));
-                brand.add(cursor.getString(2));
+                price.add(cursor.getFloat(5));
+                maxOrder.add(cursor.getInt(6));
                 generic.add(cursor.getString(3));
+                totalPrice+=cursor.getFloat(7);
                 cursorValue= cursor.moveToNext();
             }
-            cursor.close();
 
         } catch(SQLiteException e) {
             Toast toast = Toast.makeText(ShowCart.this, "Database Unavailable", Toast.LENGTH_SHORT);
             toast.show();
         }
 
+        //setting the total value
+        TextView textView = findViewById(R.id.showPrice);
+        textView.setText(" Rs "+totalPrice);
+
         if (code.size()==0){
-
-/*
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("No Items on cart");
-
-            builder.setPositiveButton("Okay", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-
-                    dialog.dismiss();
-                    Intent intent = new Intent(ShowCart.this,MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
-
-                }
-            });
-
-            builder.create().show();*/
             ImageView image = findViewById(R.id.no_item);
             image.setVisibility(View.VISIBLE);
 
@@ -216,102 +198,18 @@ public class ShowCart extends AppCompatActivity {
             relativeLayout.setVisibility(View.VISIBLE);
 
             fb.setVisibility(View.INVISIBLE);
+
+            CardView cardView = findViewById(R.id.totalPrice);
+            cardView.setVisibility(View.INVISIBLE);
         }
 
         final RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-
         // Create adapter passing in the sample user data
-        adapter = new CartAdapter(ShowCart.this,code,type,brand,generic);
-
-        // Set layout manager to position the items
+        adapter = new CartAdapter(ShowCart.this,code,price,maxOrder,generic);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        // Attach the adapter to the recyclerview to populate items
         recyclerView.setAdapter(adapter);
 
     }
-
-    private void exportTheDB() throws IOException
-    {
-        SQLiteDatabase db = helper.getReadableDatabase();
-        Cursor cursor = db.query("CART",
-                new String[] {"CODE","TYPE","BRANDNAME","GENERIC","COMPANY","PRICE", "MAXORDER"},
-                null,null,null,null,null);
-
-        File myFile;
-        String path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/DawaiDost/";
-        Log.d("paths",path);
-
-        try {
-            boolean mFile = new File(path).mkdir();
-            Log.d("direct",String.valueOf(mFile));
-
-            myFile = new File(path+"order.csv");
-            Log.d("path", String.valueOf(myFile));
-            //myFile.createNewFile();
-
-            FileOutputStream fOut = new FileOutputStream(myFile);
-            OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
-
-            //giving the column names
-            myOutWriter.append("CODE,TYPE,BRAND NAME,GENERIC,COMPANY,PRICE,QUANTITY,IP Address,"+ip+",MAC Address,"+address);
-            myOutWriter.append("\n");
-
-            boolean cursorValue= cursor.moveToFirst();
-
-            while(cursorValue){
-
-                myOutWriter.append(cursor.getString(0));
-                myOutWriter.append(",");
-                myOutWriter.append(cursor.getString(1));
-                myOutWriter.append(",");
-                myOutWriter.append(cursor.getString(2));
-                myOutWriter.append(",");
-                myOutWriter.append(cursor.getString(3));
-                myOutWriter.append(",");
-                myOutWriter.append(cursor.getString(4));
-                myOutWriter.append(",");
-                myOutWriter.append(cursor.getString(5));
-                myOutWriter.append(",");
-                myOutWriter.append(cursor.getString(6));
-
-                myOutWriter.append("\n");
-
-                cursorValue = cursor.moveToNext();
-            }
-
-            myOutWriter.close();
-            fOut.close();
-            cursor.close();
-
-        } catch (SQLiteException e) {
-            Log.e("okas","Could not create or Open the database");
-        }
-
-    }
-
-    //sending mail
-    public void sendmail(){
-        String filename = "order.csv";
-        File filelocation = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/DawaiDost/", filename);
-        Uri uri = FileProvider.getUriForFile(ShowCart.this,BuildConfig.APPLICATION_ID+".provider",filelocation);
-        Log.d("path", String.valueOf(filelocation));
-
-        Intent intent = new Intent(Intent.ACTION_SEND);
-        intent.setType("vnd.android.cursor.dir/email");
-        intent.putExtra(Intent.EXTRA_EMAIL, new String[] {"minusarraf96@gmail.com"});
-        intent.putExtra(Intent.EXTRA_SUBJECT, "Order");
-        intent.putExtra(Intent.EXTRA_STREAM, uri);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivity(intent);
-            finish();
-        }
-    }
-
-
 
     @Override
     public void onDestroy() {
@@ -322,8 +220,76 @@ public class ShowCart extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch(item.getItemId()){
             case android.R.id.home:
-                finish();
+                goToHome();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        goToHome();
+        super.onBackPressed();
+    }
+
+    public void goToHome(){
+        Intent intent = new Intent(ShowCart.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    public void postData(){
+        sharedPreferences=getSharedPreferences(MYPREFERENCES,Context.MODE_PRIVATE);
+        String name = sharedPreferences.getString(Name," ");
+        String phone =sharedPreferences.getString(Phone,"");
+        String address=sharedPreferences.getString(Address,"");
+
+        String userData = "entry_993656695="+ URLEncoder.encode(name)+"&"+
+                "entry_405352747="+ URLEncoder.encode(phone)+"&"+
+                "entry_1591763232="+ URLEncoder.encode(address);
+
+        String url = "https://docs.google.com/forms/u/1/d/e/1FAIpQLScZZRFngxsCcNr1dbWFsLL8AsXBjVS_euKsr2zhtuWQM_Zi4A/formResponse";
+        HttpRequest mRequest = new HttpRequest();
+
+        String resp = mRequest.sendPost(url,userData);
+
+        boolean cursorValue = cursor.moveToFirst();
+        while(cursorValue){
+            String data = "entry_993656695="+ URLEncoder.encode(cursor.getString(0))+"&"+
+                    "entry_405352747="+ URLEncoder.encode(cursor.getString(1))+"&"+
+                    "entry_1591763232="+ URLEncoder.encode(cursor.getString(2))+"&"+
+                    "entry_995971312="+ URLEncoder.encode(cursor.getString(3))+"&"+
+                    "entry_167376227="+ URLEncoder.encode(cursor.getString(4))+"&"+
+                    "entry_397157865="+ URLEncoder.encode(cursor.getString(4))+"&"+
+                    "entry_1330510750="+ URLEncoder.encode(String.valueOf(cursor.getFloat(5)))+"&"+
+                    "entry_326885020="+ URLEncoder.encode(String.valueOf(cursor.getFloat(5)))+"&"+
+                    "entry_1732604557="+ URLEncoder.encode(String.valueOf(cursor.getInt(6)))+"&"+
+                    "entry_1281130329="+URLEncoder.encode(String.valueOf(cursor.getFloat(7)));
+
+            String mResponse = mRequest.sendPost(url,data);
+            if (mResponse!=null){
+                //delete cart
+                SQLiteDatabase db = helper.getReadableDatabase();
+                db.delete("CART",null,null);
+            }
+            cursorValue=cursor.moveToNext();
+        }
+
+        String totPrice = "entry_397157865="+ URLEncoder.encode("Total")+"&"+
+                "entry_1281130329="+URLEncoder.encode(String.valueOf(totalPrice));
+        String resp2 = mRequest.sendPost(url,totPrice);
+
+        String data = "entry_993656695="+ URLEncoder.encode(" ")+"&"+
+                "entry_405352747="+ URLEncoder.encode(" ")+"&"+
+                "entry_1591763232="+ URLEncoder.encode(" ")+"&"+
+                "entry_995971312="+ URLEncoder.encode(" ")+"&"+
+                "entry_167376227="+ URLEncoder.encode(" ")+"&"+
+                "entry_397157865="+ URLEncoder.encode(" ")+"&"+
+                "entry_1330510750="+ URLEncoder.encode(" ")+"&"+
+                "entry_326885020="+ URLEncoder.encode(" ")+"&"+
+                "entry_1732604557="+ URLEncoder.encode(" ")+"&"+
+                "entry_1281130329="+URLEncoder.encode(" ");
+
+        String mResponse = mRequest.sendPost(url,data);
     }
 }

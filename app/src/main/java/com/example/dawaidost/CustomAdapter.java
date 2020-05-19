@@ -67,7 +67,6 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
                     intent1.putExtra("Brand",brand.get(position));
                     intent1.putExtra("Generic",generic.get(position));
                     context.startActivity(intent1);
-
                     break;
             }
         }

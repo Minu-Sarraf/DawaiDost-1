@@ -21,13 +21,12 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 
 import java.util.ArrayList;
-//371592
 
-public class AddCart extends AppCompatActivity implements View.OnClickListener {
+public class AddCart extends AppCompatActivity{
 
     TextView tv1, tv2, tv3, tv4,tv5,tv6;
     String code, type, brand, generic, company;
-    Float price, mrp;
+    Float price, mrp, total;
     int noOrder=1;
     SQLiteOpenHelper helper = new Database(AddCart.this);
     SQLiteDatabase db;
@@ -94,7 +93,8 @@ public class AddCart extends AppCompatActivity implements View.OnClickListener {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                Log.d("order",noOrder+" "+price);
+                total = noOrder*price;
                 //add an order to cart
                 try{
                     db= helper.getReadableDatabase();
@@ -106,6 +106,7 @@ public class AddCart extends AppCompatActivity implements View.OnClickListener {
                     contentValues.put("COMPANY",company);
                     contentValues.put("PRICE",price);
                     contentValues.put("MAXORDER",noOrder);
+                    contentValues.put("TOTAL",total);
                     db.insert("CART",null,contentValues);
                     Toast.makeText(AddCart.this,"Added to Cart",Toast.LENGTH_SHORT).show();
                 }catch(SQLException e){
@@ -113,19 +114,13 @@ public class AddCart extends AppCompatActivity implements View.OnClickListener {
                 }
 
                 //go to home page
-                Intent intent = new Intent(AddCart.this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                Intent intent = new Intent(AddCart.this, ShowCart.class);
                 startActivity(intent);
                 finish();
 
 
             }
         });
-
-    }
-
-    @Override
-    public void onClick(View view) {
 
     }
 

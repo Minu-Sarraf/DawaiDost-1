@@ -2,10 +2,13 @@ package com.example.dawaidost;
 
 import android.Manifest;
 import android.app.ActionBar;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.LauncherActivity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -13,13 +16,18 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -30,6 +38,7 @@ import android.view.Menu;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -47,12 +56,17 @@ import com.android.volley.toolbox.Volley;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.jaredrummler.materialspinner.MaterialSpinner;
+import com.leinardi.android.speeddial.SpeedDialActionItem;
+import com.leinardi.android.speeddial.SpeedDialView;
 import com.mancj.materialsearchbar.MaterialSearchBar;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.GravityCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -70,6 +84,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -85,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     JSONObject mResponse;
     static boolean synced = false;
     DrawerLayout drawer;
+    private static final int CAMERA_REQUEST = 1888;
 
     SearchView searchView;
 
@@ -92,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setTitle("Home (Dawai Dost)");
 
 
         //check internet connection
@@ -155,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
 
-        //on click floating action button
+/*        //on click floating action button
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -165,12 +185,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Intent intent =new Intent(MainActivity.this,ShowCart.class);
                 startActivity(intent);
             }
-        });
+        });*/
 
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        //navigation view
+
+
+/*        //navigation view
         drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(MainActivity.this,drawer,toolbar,R.string.navigation_drawer_open,R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
@@ -186,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
-        NavigationUI.setupWithNavController(navigationView, navController);
+        NavigationUI.setupWithNavController(navigationView, navController);*/
 
 
 
@@ -196,7 +218,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         recyclerView.setLayoutManager(layoutManager);
 
 
-        //serach view and searching data
+        //search view and searching data
         searchView = findViewById(R.id.searchView);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -211,6 +233,156 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
+        //upload prescription
+        ImageView imageView =  findViewById(R.id.prescription);
+        imageView.setClickable(true);
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(ContextCompat.checkSelfPermission(MainActivity.this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED){
+                    ActivityCompat.requestPermissions(MainActivity.this,
+                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},0);
+                }else{
+                    Intent intent= new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    startActivityForResult(intent,CAMERA_REQUEST);
+                }
+            }
+        });
+
+        //speed dial floating action button
+        SpeedDialView speedDialView = findViewById(R.id.speedDial);
+        speedDialView.inflate(R.menu.activity_main_drawer);
+
+        speedDialView.setOnActionSelectedListener(new SpeedDialView.OnActionSelectedListener() {
+            @Override
+            public boolean onActionSelected(SpeedDialActionItem speedDialActionItem) {
+                Intent intent;
+                switch (speedDialActionItem.getId()) {
+                    case R.id.nav_branches:
+                        intent = new Intent(MainActivity.this, Branches.class);
+                        startActivity(intent);
+                        return false; // true to keep the Speed Dial open
+                    case R.id.nav_cart:
+                        //show items on cart
+                        intent =new Intent(MainActivity.this,ShowCart.class);
+                        startActivity(intent);
+                        return false;
+                    case R.id.nav_logout:
+                        onClickLogOut();
+                        return false;
+                    default:
+                        return false;
+                }
+            }
+        });
+
+
+        speedDialView.addActionItem(
+                new SpeedDialActionItem.Builder(R.id.nav_branches, R.drawable.branches)
+                        .setFabBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.yellow, getTheme()))
+                        .setFabImageTintColor(ResourcesCompat.getColor(getResources(), R.color.dark, getTheme()))
+                        .setLabel("Branches")
+                        .setLabelColor(Color.BLACK)
+                        .setLabelBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.yellow, getTheme()))
+                        .setLabelClickable(false)
+                        .create()
+        );
+
+        speedDialView.addActionItem(
+                new SpeedDialActionItem.Builder(R.id.nav_cart, R.drawable.add_cart)
+                        .setFabBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.yellow, getTheme()))
+                        .setFabImageTintColor(ResourcesCompat.getColor(getResources(), R.color.dark, getTheme()))
+                        .setLabel("My Cart")
+                        .setLabelColor(Color.BLACK)
+                        .setLabelBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.yellow, getTheme()))
+                        .setLabelClickable(false)
+                        .create()
+        );
+
+        speedDialView.addActionItem(
+                new SpeedDialActionItem.Builder(R.id.nav_logout, R.mipmap.logout)
+                        .setFabBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.yellow, getTheme()))
+                        .setFabImageTintColor(ResourcesCompat.getColor(getResources(), R.color.dark, getTheme()))
+                        .setLabel("Log Out")
+                        .setLabelColor(Color.BLACK)
+                        .setLabelBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.yellow, getTheme()))
+                        .setLabelClickable(false)
+                        .create()
+        );
+    }
+
+    public void onClickLogOut(){
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle("Do you want to log out? You may loose your data!");
+
+        dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.setPositiveButton("Log Out", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs",Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+
+                editor.putString("nameKey"," ");
+                editor.putString("phoneKey"," ");
+                editor.putString("addresskey"," ");
+                editor.commit();
+
+                SQLiteDatabase db = helper.getReadableDatabase();
+                db.delete("CART", null, null);
+
+                Intent intent = new Intent(MainActivity.this, LoginPage.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+            }
+        });
+        dialog.create().show();
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        File pic = null;
+        if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
+            Bitmap theImage=(Bitmap) data.getExtras().get("data");
+            try{
+                File root = Environment.getExternalStorageDirectory();
+                if(root.canWrite()){
+                    pic=new File(root,"prescription.png");
+                    FileOutputStream out = new FileOutputStream(pic);
+                    theImage.compress(Bitmap.CompressFormat.PNG,100,out);
+                    out.flush();
+                    out.close();
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            Uri uri = FileProvider.getUriForFile(this,BuildConfig.APPLICATION_ID+".provider",pic);
+
+            Intent intent = new Intent(Intent.ACTION_SENDTO);
+            intent.setType("vnd.android.cursor.dir/email");
+            intent.putExtra(Intent.EXTRA_EMAIL, new String[] {"minusarraf96@gmail.com"});
+            intent.putExtra(Intent.EXTRA_SUBJECT, "Prescription");
+            intent.putExtra(Intent.EXTRA_STREAM, uri);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                startActivity(intent);
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     //show the matched list of dawais
@@ -229,16 +401,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             CustomAdapter customAdapter = new CustomAdapter(getApplicationContext(),nothing,nothing,nothing,nothing);
             recyclerView.setAdapter(customAdapter);
 
-
             LinearLayout relativeLayout = findViewById(R.id.relativeLayout);
             relativeLayout.setVisibility(View.VISIBLE);
-
         }else{
             //search length is reached.
 
             LinearLayout relativeLayout = findViewById(R.id.relativeLayout);
             relativeLayout.setVisibility(View.INVISIBLE);
-
 
             ArrayList<String> code = new ArrayList<>();
             ArrayList<String> type = new ArrayList<>();
@@ -262,7 +431,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 cursorValue=cursor.moveToNext();
             }
 
-
             //populating recycler view
             CustomAdapter customAdapter = new CustomAdapter(MainActivity.this,code,type,brand,generic);
             recyclerView.setAdapter(customAdapter);
@@ -270,34 +438,31 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    @Override
+ /*   @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
-    }
+    }*/
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
         int id= item.getItemId();
-
         if(id == R.id.branches){
             Intent intent = new Intent(MainActivity.this, Branches.class);
             startActivity(intent);
         }
-
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
+/*    @Override
     public void onBackPressed() {
         if(drawer.isDrawerOpen(GravityCompat.START)){
             drawer.closeDrawer(GravityCompat.START);
         }else{
             super.onBackPressed();
         }
-    }
+    }*/
 
     @Override
     public boolean onSupportNavigateUp() {
@@ -309,7 +474,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public void saveToDB(JSONObject mResponse){
         //saving data from google sheet into database
-
         try {
             JSONArray array = mResponse.getJSONArray("Sheet1");
             int totalData = array.length();
@@ -353,33 +517,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }catch(SQLiteException e){
                     Toast.makeText(this,"Database Unavailable",Toast.LENGTH_SHORT).show();
                 }
-
                 count += 1;
             }
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id= item.getItemId();
-
         Log.d("Clicked",String.valueOf(id));
         if(id==R.id.nav_branches){
             Toast.makeText(this,"branches",Toast.LENGTH_SHORT).show();
         }
-
         return true;
     }
 
 
     public class GetData extends AsyncTask<String, Integer, JSONObject> {
-
         //get request to a google sheet
-
         private JSONObject finalResponse = new JSONObject();
         ProgressDialog progressDialog;
 
@@ -388,11 +545,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             publishProgress(5);
 
             RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
-
             //url of the google sheet
             //it should be kept in separate file at one place
             final String url = "https://script.google.com/macros/s/AKfycbxOLElujQcy1-ZUer1KgEvK16gkTLUqYftApjNCM_IRTL3HSuDk/exec?id=1Otp-z4nZshefjvji-tBIKqyG6fO74G6sXZ9TfmMlQfI&sheet=Sheet1";
-
             JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.GET, url, null,
                     new Response.Listener<JSONObject>()
                     {
@@ -404,7 +559,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                 //progressbar for syncing dawai
                                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                                 dawaiLoadingDialog.setVisibility(View.GONE);
-
 
                                 db=helper.getReadableDatabase();
                                 db.delete("DAWAI",null,null);
@@ -430,27 +584,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         }
                     }
             );
-
             queue.add(getRequest);
-
             mResponse=finalResponse;
             return finalResponse;
         }
 
-        @Override
-        protected void onPreExecute(){
-
-        }
-
-        @Override
-        protected void onPostExecute(JSONObject response){
-
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            super.onProgressUpdate(values);
-        }
     }
 
     @Override

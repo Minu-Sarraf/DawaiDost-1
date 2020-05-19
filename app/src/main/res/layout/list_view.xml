@@ -28,7 +28,7 @@
                 android:layout_marginLeft="@dimen/marginTB"
                 android:id="@+id/code"
                 android:textSize="18sp"
-                android:textColor="@color/dark"/>
+                android:textColor="@color/dark" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
