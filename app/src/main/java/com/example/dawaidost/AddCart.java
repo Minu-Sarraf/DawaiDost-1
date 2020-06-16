@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 
 import java.util.ArrayList;
@@ -26,7 +28,8 @@ public class AddCart extends AppCompatActivity{
 
     TextView tv1, tv2, tv3, tv4,tv5,tv6;
     String code, type, brand, generic, company;
-    Float price, mrp, total;
+    Float price, mrp,total;
+    Integer prescription;
     int noOrder=1;
     SQLiteOpenHelper helper = new Database(AddCart.this);
     SQLiteDatabase db;
@@ -56,9 +59,20 @@ public class AddCart extends AppCompatActivity{
 
         db=helper.getReadableDatabase();
 
+        //number of items in cart
+        Cursor cursor1 = db.query("CART",
+                new String[]{"CODE"},
+                null,null,null,null,null);
+        int count = 0;
+        boolean countValue = cursor1.moveToFirst();
+        while(countValue){
+            count++;
+            countValue=cursor1.moveToNext();
+        }
+
         //getting values of dawai
-        Cursor cursor = db.query("DAWAI",
-                new String[] {"CODE","COMPANY","MRP","PRICE"},
+        final Cursor cursor = db.query("DAWAI",
+                new String[] {"CODE","COMPANY","MRP","PRICE","PRESCRIPTION"},
                 "CODE=?",
                 new String[] {code},
                 null,null,null);
@@ -67,6 +81,7 @@ public class AddCart extends AppCompatActivity{
             company=(cursor.getString(1));
             price=(cursor.getFloat(3));
             mrp=cursor.getFloat(2);
+            prescription=cursor.getInt(4);
         }
 
         tv1.setText(code);
@@ -90,11 +105,36 @@ public class AddCart extends AppCompatActivity{
 
         //adding to cart
         FloatingActionButton fab = findViewById(R.id.fab);
+        final int finalCount = count;
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("order",noOrder+" "+price);
-                total = noOrder*price;
+
+                if(finalCount ==10){
+                    Snackbar.make(view,
+                            "Your cart is full. Please delete item to add.",
+                            Snackbar.LENGTH_SHORT).show();
+                    return;
+                }
+
+                total=price*noOrder;
+
+                Cursor cursor1 = db.query("CART",
+                        new String[] {"PRICE","MAXORDER","TOTAL"},
+                        "CODE=?",
+                        new String[]{code},
+                        null,null,null
+                        );
+
+                //update value in cart
+                if(cursor1.moveToFirst()){
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put("MAXORDER",noOrder+cursor1.getInt(1));
+                    contentValues.put("TOTAL",total+cursor1.getFloat(2));
+                    db.update("CART",contentValues,"CODE=?", new String[]{code});
+                    cursor1.close();
+                }
+
                 //add an order to cart
                 try{
                     db= helper.getReadableDatabase();
@@ -107,9 +147,10 @@ public class AddCart extends AppCompatActivity{
                     contentValues.put("PRICE",price);
                     contentValues.put("MAXORDER",noOrder);
                     contentValues.put("TOTAL",total);
+                    contentValues.put("PRESCRIPTION",prescription);
                     db.insert("CART",null,contentValues);
                     Toast.makeText(AddCart.this,"Added to Cart",Toast.LENGTH_SHORT).show();
-                }catch(SQLException e){
+                } catch(SQLException e){
                     Toast.makeText(AddCart.this,"Database Unavailable",Toast.LENGTH_SHORT).show();
                 }
 
@@ -117,7 +158,6 @@ public class AddCart extends AppCompatActivity{
                 Intent intent = new Intent(AddCart.this, ShowCart.class);
                 startActivity(intent);
                 finish();
-
 
             }
         });

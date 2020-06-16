@@ -25,6 +25,16 @@
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
     <string name="title_activity_login">Sign in</string>
+    <string name="branch1">
+        <a href="www.google.com">Branch 1</a>
+    </string>
+
+    <string name="title_activity_my_cart">MyCart</string>
+    <string name="tab_text_1">Cart</string>
+    <string name="tab_text_2">Regular Order</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
     <string-array name="noOrder">
         <item>1</item>
         <item>2</item>
@@ -37,6 +47,5 @@
         <item>9</item>
         <item>10</item>
     </string-array>
-
 
 </resources>

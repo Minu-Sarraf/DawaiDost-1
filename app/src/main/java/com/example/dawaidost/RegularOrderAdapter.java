@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
-public class CartAdapter extends RecyclerView.Adapter<CartAdapter.MyViewHolder> {
+public class RegularOrderAdapter extends RecyclerView.Adapter<RegularOrderAdapter.MyViewHolder> {
 
     private ArrayList<String> code, brand = new ArrayList<>();
     private ArrayList<Float> price = new ArrayList<>();
@@ -37,7 +37,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.MyViewHolder> 
             textPrice = (TextView) itemView.findViewById(R.id.text2);
             imageView = (ImageView) itemView.findViewById(R.id.image);
 
-            imageView.setOnClickListener(this);
+            //imageView.setOnClickListener(this);
 
         }
 
@@ -60,7 +60,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.MyViewHolder> 
                         public void onClick(DialogInterface dialog, int which) {
                             db.delete("CART","CODE=?",new String[] {cd});
                             dialog.dismiss();
-                            Intent intent1 = new Intent(context,ShowCart.class);
+                            Intent intent1 = new Intent(context,MyCart.class);
                             intent1.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             context.startActivity(intent1);
                             Toast.makeText(context," DELETED",Toast.LENGTH_SHORT).show();
@@ -81,7 +81,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.MyViewHolder> 
 
     }
 
-    public CartAdapter(Context context,ArrayList<String> code, ArrayList<Float> price, ArrayList<Integer> maxOrder, ArrayList<String> brand){
+    public RegularOrderAdapter(Context context,ArrayList<String> code, ArrayList<Float> price, ArrayList<Integer> maxOrder, ArrayList<String> brand){
         this.code=code;
         this.price=price;
         this.maxOrder=maxOrder;
@@ -94,14 +94,14 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.MyViewHolder> 
 
     @NonNull
     @Override
-    public CartAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RegularOrderAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_view,parent,false);
 
-        return new CartAdapter.MyViewHolder(itemView);
+        return new RegularOrderAdapter.MyViewHolder(itemView);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull CartAdapter.MyViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RegularOrderAdapter.MyViewHolder holder, int position) {
 
         String cd = code.get(position);
         Float prc = price.get(position);
@@ -110,7 +110,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.MyViewHolder> 
         holder.textCode.setText(cd+": ");
         holder.textGeneric.setText(gn);
         holder.textPrice.setText("Rs "+prc+" * "+order+" pcs = Rs "+String.format("%.02f",prc*order));
-        holder.imageView.setImageResource(R.drawable.delete);
+        //holder.imageView.setImageResource(R.drawable.delete);
 
     }
 
@@ -118,5 +118,6 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.MyViewHolder> 
     public int getItemCount() {
         return code.size();
     }
+
 
 }

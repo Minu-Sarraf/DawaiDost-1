@@ -33,7 +33,7 @@ public class Splash extends Activity {
             @Override
             public void run() {
                 /* Create an Intent that will start the Menu-Activity. */
-                if(name==" "){
+                if(name.equals(" ")){
                     intent = new Intent(Splash.this,LoginPage.class);
                 }else{
                     intent = new Intent(Splash.this,MainActivity.class);

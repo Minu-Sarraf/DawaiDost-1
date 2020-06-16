@@ -1,13 +1,13 @@
 package com.example.dawaidost;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.Editable;
-import android.util.Log;
+import android.text.style.UpdateAppearance;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,7 +15,7 @@ import android.widget.Toast;
 
 import java.net.URLEncoder;
 
-public class LoginPage extends AppCompatActivity {
+public class UpdateDetails extends AppCompatActivity {
     EditText name, age, address, pinCode, phone, altPhone, email, landmark;
     Button loginButton;
 
@@ -24,26 +24,45 @@ public class LoginPage extends AppCompatActivity {
     public static final String Name="nameKey";
     public static final String Age="ageKey";
     public static final String Address="addressKey";
-    public static final String Landmark="landmarkKey";
     public static final String Pincode="pinKey";
     public static final String Phone="phoneKey";
     public static final String AltPhone="altPhoneKey";
     public static final String Email ="emailKey";
+    public static final String Landmark ="landmarkKey";
+
+    String tableName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login_page);
-        setTitle("Login Page");
+        setContentView(R.layout.activity_update_details);
+        setTitle("Confirm your details");
 
         name = findViewById(R.id.userName);
         age = findViewById(R.id.userAge);
         address = findViewById(R.id.userAddress);
-        landmark = findViewById(R.id.userLandmark);
         pinCode = findViewById(R.id.userPin);
         phone = findViewById(R.id.userPhone);
         altPhone= findViewById(R.id.userAltPhone);
         email = findViewById(R.id.userEmail);
+        landmark = findViewById(R.id.userLandmark);
+
+        final String savedName = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).getString("nameKey"," ");
+        final String savedAge = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).getString("ageKey"," ");
+        final String savedAddress = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).getString("addressKey"," ");
+        final String savedPincode = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).getString("pinKey"," ");
+        final String savedPhone = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).getString("phoneKey"," ");
+        final String savedAltPhone = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).getString("altPhoneKey"," ");
+        final String savedEmail = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).getString("emailKey"," ");
+        final String savedLandmark = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).getString("landmarkKey"," ");
+
+        name.setText(savedName);
+        age.setText(savedAge);
+        address.setText(savedAddress);
+        pinCode.setText(savedPincode);
+        phone.setText(savedPhone);
+        altPhone.setText(savedAltPhone);
+        email.setText(savedEmail);
 
         loginButton=findViewById(R.id.buttonLogin);
         sharedPreferences=getSharedPreferences(MYPREFERENCES, Context.MODE_PRIVATE);
@@ -54,11 +73,11 @@ public class LoginPage extends AppCompatActivity {
                 final String uName = name.getText().toString();
                 final String uAge = age.getText().toString();
                 final String uAddress= address.getText().toString();
-                final String uLandmark = landmark.getText().toString();
                 final String uPin= pinCode.getText().toString();
                 final String uPhone= phone.getText().toString();
                 final String uAltPhone= altPhone.getText().toString();
                 final String uEmail= email.getText().toString();
+                final String uLandmark = landmark.getText().toString();
 
                 Thread t = new Thread(new Runnable() {
                     @Override
@@ -68,46 +87,45 @@ public class LoginPage extends AppCompatActivity {
                 });
 
                 if(uName.length()==0) {
-                    name.setError("This field cannot be empty");
+                    name.setError("Enter your full name");
                 }else if(uAge.length()==0) {
-                    age.setError("This field cannot be empty");
+                    age.setError("Enter your age");
                 }else if(uAddress.length()==0) {
-                    address.setError("This field cannot be empty");
+                    address.setError("Enter your full address");
                 }else if(uPin.length()!=6){
                     pinCode.setError("Please enter a valid pin number!");
                 }else if (uPhone.length()!=10){
                     phone.setError("Please Enter a valid Phone Number!");
-                }else if(uLandmark.length()==0){
-                    landmark.setError("Please enter a landmark!");
                 }else if(uEmail.length()==0){
-                    email.setError("Please enter a valid Email Address!");
+                    email.setError("Please enter a valid email!");
                 }else{
-                    t.start();
-                    saveUserData(uName,uAge,uAddress,uPin,uPhone,uAltPhone,uEmail,uLandmark);
+                    if(uName!=savedName || uAge!=savedAge || uAddress!=savedAddress || uPin!=savedPincode || uPhone!=savedPhone || uAltPhone!=savedAltPhone || uEmail!=savedEmail || uLandmark!=savedLandmark){
+                        t.start();
+                        saveUserData(uName,uAge,uAddress,uPin,uPhone,uAltPhone,uEmail);
+                    }
                 }
             }
         });
     }
 
-    public void saveUserData(String uName, String uAge, String uAddress, String uPin, String uPhone, String uAltPhone, String uEmail, String uLandmark){
-        Toast.makeText(LoginPage.this,"Welcome "+uName,Toast.LENGTH_SHORT).show();
+    public void saveUserData(String uName, String uAge, String uAddress, String uPin, String uPhone, String uAltPhone, String uEmail){
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
         editor.putString(Name,uName);
         editor.putString(Age,uAge);
         editor.putString(Address,uAddress);
-        editor.putString(Landmark,uLandmark);
         editor.putString(Pincode,uPin);
         editor.putString(Phone,uPhone);
         editor.putString(AltPhone,uAltPhone);
         editor.putString(Email,uEmail);
         editor.commit();
 
-        Intent intent = new Intent(LoginPage.this,MainActivity.class);
+
+        Intent intent = new Intent(UpdateDetails.this,ConfirmOrder.class);
+        intent.putExtra("TABLE_NAME",tableName);
         startActivity(intent);
         finish();
-
     }
 
     public void sendData(String uName, String uAge, String uAddress, String uPin, String uPhone, String uAltPhone, String uEmail, String uLandmark){
@@ -130,5 +148,4 @@ public class LoginPage extends AppCompatActivity {
         }
 
     }
-
 }

@@ -48,7 +48,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="TYPE : "
+            android:text="PACKING : "
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
             />
@@ -149,7 +149,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="PRICE : "
+            android:text="PRICE : Rs "
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
             />
@@ -183,7 +183,7 @@
         <com.jaredrummler.materialspinner.MaterialSpinner
             android:id="@+id/spinner"
             android:paddingLeft="@dimen/activity_horizontal_margin"
-
+            android:textColor="@color/dark"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 

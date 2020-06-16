@@ -1,24 +1,17 @@
 package com.example.dawaidost;
 
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.media.Image;
-import android.os.Build;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -26,7 +19,7 @@ import java.util.ArrayList;
 
 public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHolder> {
 
-    private ArrayList<String> code, type, brand, generic = new ArrayList<>();
+    private ArrayList<String> code, packing, brand, generic = new ArrayList<>();
     Context context;
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
@@ -53,7 +46,7 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
                 case R.id.row:
                     Intent intent = new Intent(context, AddCart.class);
                     intent.putExtra("Code",code.get(position));
-                    intent.putExtra("Type",type.get(position));
+                    intent.putExtra("Type", packing.get(position));
                     intent.putExtra("Brand",brand.get(position));
                     intent.putExtra("Generic",generic.get(position));
                     context.startActivity(intent);
@@ -63,7 +56,7 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
                     Log.d("code",code.get(position));
                     Intent intent1 = new Intent(context, AddCart.class);
                     intent1.putExtra("Code",code.get(position));
-                    intent1.putExtra("Type",type.get(position));
+                    intent1.putExtra("Type", packing.get(position));
                     intent1.putExtra("Brand",brand.get(position));
                     intent1.putExtra("Generic",generic.get(position));
                     context.startActivity(intent1);
@@ -75,7 +68,7 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
 
     public CustomAdapter(Context context,ArrayList<String> code, ArrayList<String> type, ArrayList<String> brand, ArrayList<String> generic){
         this.code=code;
-        this.type=type;
+        this.packing =type;
         this.brand= brand;
         this.generic= generic;
         this.context= context;
@@ -97,14 +90,14 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
     public void onBindViewHolder(@NonNull CustomAdapter.MyViewHolder holder, int position) {
 
         String cd = code.get(position);
-        String tp = type.get(position);
+        String tp = packing.get(position);
         String bd = brand.get(position);
         String gn = generic.get(position);
         //change to different column
         holder.textCode.setText(cd + ": ");
         holder.textView1.setText(gn);
         //indicate type n brand
-        holder.textView2.setText("Type: " + tp+",  Brand: "+bd);
+        holder.textView2.setText("Packing: " + tp+",  Brand: "+bd);
         //add to cart image
         holder.imageView.setImageResource(R.mipmap.add_cart);
 

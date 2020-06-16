@@ -29,6 +29,7 @@
         android:layout_gravity="center_horizontal"
         android:text="Refresh"
         android:id="@+id/refresh"
-        android:background="#FFFF00"/>
+        android:textColor="@color/white"
+        android:background="@android:color/holo_blue_dark"/>
 
 </LinearLayout>

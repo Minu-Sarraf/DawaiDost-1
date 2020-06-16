@@ -94,14 +94,26 @@
             android:src="@mipmap/home_page" />
 
         <TextView
+            android:id="@+id/homeText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:text="www.dawaidost.co.in | Helpline Number: 7677807777"
+            android:text="www.dawaidost.co.in"
             android:textSize="14sp"
             android:textStyle="bold"
             android:textColor="@android:color/black"
+            android:autoLink="web"
             android:layout_below="@id/home_page3" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Helpline Number: 7677807777"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:layout_below="@id/homeText" />
 
 
     </LinearLayout>

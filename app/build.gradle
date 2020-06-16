@@ -48,4 +48,10 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
 
     implementation "com.leinardi.android:speed-dial:1.0-alpha06"
+
+    compile 'com.google.api-client:google-api-client:1.22.0'
+    compile 'com.google.apis:google-api-services-drive:v3-rev45-1.22.0'
+    compile 'com.google.apis:google-api-services-sheets:v4-rev30-1.22.0'
+
+    implementation "com.google.android.gms:play-services-drive:17.0.0";
 }

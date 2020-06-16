@@ -1,7 +1,7 @@
 package com.example.dawaidost;
 
-import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
@@ -12,32 +12,31 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.graphics.Canvas;
-import android.graphics.Rect;
-import android.media.Image;
+import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.os.Environment;
+import android.os.Parcelable;
+import android.provider.MediaStore;
 import android.text.format.Formatter;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -47,13 +46,17 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.HttpRetryException;
-import java.net.URI;
+import java.io.Writer;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.List;
+
+import static androidx.core.graphics.TypefaceCompatUtil.getTempFile;
 
 public class ShowCart extends AppCompatActivity {
 
@@ -61,25 +64,43 @@ public class ShowCart extends AppCompatActivity {
     ArrayList<String> code = new ArrayList<>();
     ArrayList<Float> price = new ArrayList<>();
     ArrayList<Integer> maxOrder = new ArrayList<>();
-    ArrayList<String> generic = new ArrayList<>();
+    ArrayList<String> brand = new ArrayList<>();
     public CartAdapter adapter;
     String address, ip;
     double latitude, longitude;
     Float totalPrice= Float.valueOf(0);
     Cursor cursor;
     boolean connected = false;
+    int valuePrescription=0;
+    File picture;
 
+    final static Integer emailCode = 1000;
+
+    ArrayList<String> PinCode = new ArrayList<>();
+    Intent intent = new Intent(Intent.ACTION_SEND);
+
+    boolean preferenceCheck;
     SharedPreferences sharedPreferences;
-    public static final String MYPREFERENCES="MyPrefs";
-    public static final String Name="nameKey";
-    public static final String Phone="phoneKey";
-    public static final String Address="addressKey";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_cart);
         setTitle("My Cart");
+
+        //setting avail Pincodes
+        PinCode.add("834001");
+        PinCode.add("834002");
+        PinCode.add("834003");
+        PinCode.add("834004");
+        PinCode.add("834005");
+        PinCode.add("834006");
+        PinCode.add("834007");
+        PinCode.add("834008");
+        PinCode.add("834009");
+        PinCode.add("834010");
+        PinCode.add("834217");
+        PinCode.add("834219");
 
         //back button
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -101,72 +122,54 @@ public class ShowCart extends AppCompatActivity {
             connected = false;
         }
 
-/*        //getting location
-        LocationListener listener = new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                latitude = location.getLatitude();
-                longitude = location.getLongitude();
-            }
+        getPreferenceCheck();
 
-            @Override
-            public void onStatusChanged(String s, int i, Bundle bundle) {
-
-            }
-
-            @Override
-            public void onProviderEnabled(String s) {
-
-            }
-
-            @Override
-            public void onProviderDisabled(String s) {
-
-            }
-        };
-
-        LocationManager mLoc = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        mLoc.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);*/
-
-        //floating action button to send data to sheet
+        //floating action button to send data
         FloatingActionButton fb= findViewById(R.id.fab);
         fb.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Thread t = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        postData();
-                    }
-                });
-                if(connected==true){
-                    t.start();
-                    Toast.makeText(ShowCart.this,"Order Sent",Toast.LENGTH_SHORT).show();
-                    finish();
-                }else{
-                    Snackbar.make(v,"Check Internet Connection",Snackbar.LENGTH_SHORT).show();
-                }
+                if(valuePrescription>0 && preferenceCheck==false){
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(ShowCart.this);
+                    builder.setTitle("Prescription");
+                    builder.setMessage("Please send prescription for the selected medicines!");
 
+                    builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            if(ContextCompat.checkSelfPermission(ShowCart.this,
+                                    Manifest.permission.READ_EXTERNAL_STORAGE)
+                                    != PackageManager.PERMISSION_GRANTED){
+                                ActivityCompat.requestPermissions(ShowCart.this,
+                                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE},0);
+                            }else{
+                                Intent intent = getPickImageIntent(ShowCart.this);
+                                startActivityForResult(intent,1);
+                            }
+                        }
+                    });
+
+                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+                    builder.create().show();
+                }else{
+                    Intent intent = new Intent(ShowCart.this,UpdateDetails.class);
+                    startActivity(intent);
+                }
             }
         });
 
         try {
-
             //showing items in cart
             SQLiteDatabase db = helper.getReadableDatabase();
 
             cursor = db.query("CART",
-                    new String[]{"CODE","TYPE","BRANDNAME","GENERIC","COMPANY","PRICE", "MAXORDER", "TOTAL"},
+                    new String[]{"CODE","TYPE","BRANDNAME","GENERIC","COMPANY","PRICE", "MAXORDER", "TOTAL","PRESCRIPTION"},
                     null, null, null, null, null);
 
             //recycler view
@@ -176,23 +179,37 @@ public class ShowCart extends AppCompatActivity {
                 code.add(cursor.getString(0));
                 price.add(cursor.getFloat(5));
                 maxOrder.add(cursor.getInt(6));
-                generic.add(cursor.getString(3));
+                brand.add(cursor.getString(2));
                 totalPrice+=cursor.getFloat(7);
+                valuePrescription += cursor.getInt(8);
                 cursorValue= cursor.moveToNext();
             }
 
-        } catch(SQLiteException e) {
+        }catch(SQLiteException e) {
             Toast toast = Toast.makeText(ShowCart.this, "Database Unavailable", Toast.LENGTH_SHORT);
             toast.show();
         }
 
-        //setting the total value
+        //setting the total value and sub total value
         TextView textView = findViewById(R.id.showPrice);
-        textView.setText(" Rs "+totalPrice);
+
+        String pin = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).getString("pinKey"," ");
+        Integer delCharge;
+        if(PinCode.contains(pin)){
+            delCharge=20;
+        }else{
+            delCharge=50;
+        }
+        totalPrice=totalPrice+delCharge;
+        textView.setText(" Rs "+String.format("%.02f",totalPrice) );
+
+        textView = findViewById(R.id.showDeliveryPrice);
+        textView.setText(" Rs "+delCharge);
+
 
         if (code.size()==0){
-            ImageView image = findViewById(R.id.no_item);
-            image.setVisibility(View.VISIBLE);
+            ImageView image = findViewById(R.id.logo);
+            image.setVisibility(View.INVISIBLE);
 
             RelativeLayout relativeLayout = findViewById(R.id.relative_layout);
             relativeLayout.setVisibility(View.VISIBLE);
@@ -201,11 +218,14 @@ public class ShowCart extends AppCompatActivity {
 
             CardView cardView = findViewById(R.id.totalPrice);
             cardView.setVisibility(View.INVISIBLE);
+
+            cardView = findViewById(R.id.subTotal);
+            cardView.setVisibility(View.INVISIBLE);
         }
 
         final RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         // Create adapter passing in the sample user data
-        adapter = new CartAdapter(ShowCart.this,code,price,maxOrder,generic);
+        adapter = new CartAdapter(ShowCart.this,code,price,maxOrder, brand);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
@@ -238,58 +258,113 @@ public class ShowCart extends AppCompatActivity {
         finish();
     }
 
-    public void postData(){
-        sharedPreferences=getSharedPreferences(MYPREFERENCES,Context.MODE_PRIVATE);
-        String name = sharedPreferences.getString(Name," ");
-        String phone =sharedPreferences.getString(Phone,"");
-        String address=sharedPreferences.getString(Address,"");
+    public static Intent getPickImageIntent(Context context){
+        Intent chooserIntent = null;
 
-        String userData = "entry_993656695="+ URLEncoder.encode(name)+"&"+
-                "entry_405352747="+ URLEncoder.encode(phone)+"&"+
-                "entry_1591763232="+ URLEncoder.encode(address);
+        List<Intent> intentList = new ArrayList<>();
+        Intent pickIntent = new Intent (Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        Intent takePhotoIntent = new Intent (MediaStore.ACTION_IMAGE_CAPTURE);
+        pickIntent.putExtra("return-data",true);
+        pickIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(getTempFile(context)));
+        intentList = addIntentsToList(context,intentList,pickIntent);
+        intentList = addIntentsToList(context,intentList,takePhotoIntent);
 
-        String url = "https://docs.google.com/forms/u/1/d/e/1FAIpQLScZZRFngxsCcNr1dbWFsLL8AsXBjVS_euKsr2zhtuWQM_Zi4A/formResponse";
-        HttpRequest mRequest = new HttpRequest();
+        if(intentList.size()>0){
+            chooserIntent= Intent.createChooser(intentList.remove(intentList.size()-1), "Choose from...");
+            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS,intentList.toArray(new Parcelable[]{}));
+        }
+        return chooserIntent;
+    }
 
-        String resp = mRequest.sendPost(url,userData);
+    private static List<Intent> addIntentsToList(Context context,List<Intent> list, Intent intent){
+        List<ResolveInfo> resInfo = context.getPackageManager().queryIntentActivities(intent,0);
+        for(ResolveInfo resolveInfo: resInfo){
+            String packageName = resolveInfo.activityInfo.packageName;
+            Intent targetedIntent= new Intent(intent);
+            targetedIntent.setPackage(packageName);
+            list.add(targetedIntent);
+        }
+        return list;
+    }
 
-        boolean cursorValue = cursor.moveToFirst();
-        while(cursorValue){
-            String data = "entry_993656695="+ URLEncoder.encode(cursor.getString(0))+"&"+
-                    "entry_405352747="+ URLEncoder.encode(cursor.getString(1))+"&"+
-                    "entry_1591763232="+ URLEncoder.encode(cursor.getString(2))+"&"+
-                    "entry_995971312="+ URLEncoder.encode(cursor.getString(3))+"&"+
-                    "entry_167376227="+ URLEncoder.encode(cursor.getString(4))+"&"+
-                    "entry_397157865="+ URLEncoder.encode(cursor.getString(4))+"&"+
-                    "entry_1330510750="+ URLEncoder.encode(String.valueOf(cursor.getFloat(5)))+"&"+
-                    "entry_326885020="+ URLEncoder.encode(String.valueOf(cursor.getFloat(5)))+"&"+
-                    "entry_1732604557="+ URLEncoder.encode(String.valueOf(cursor.getInt(6)))+"&"+
-                    "entry_1281130329="+URLEncoder.encode(String.valueOf(cursor.getFloat(7)));
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        sharedPreferences = getSharedPreferences("MyPrefs",Context.MODE_PRIVATE);
+        String userPhone = sharedPreferences.getString("phoneKey", " ");
 
-            String mResponse = mRequest.sendPost(url,data);
-            if (mResponse!=null){
-                //delete cart
-                SQLiteDatabase db = helper.getReadableDatabase();
-                db.delete("CART",null,null);
+        Log.d("request", String.valueOf(requestCode));
+        Log.d("request", String.valueOf(resultCode));
+        if(resultCode!=RESULT_CANCELED){
+            if(requestCode==1){
+                if(data.getExtras()==null && data.getData()==null){
+                    Log.d("where?","camera");
+                }else{
+                    Uri pic= getImageFromResult(this,resultCode,data);
+                    intent.setData(Uri.parse("mailto:"));
+                    intent.setType("vnd.android.cursor.dir/email");
+                    intent.putExtra(Intent.EXTRA_EMAIL, new String[] {"trymesan204@gmail.com"});
+                    intent.putExtra(Intent.EXTRA_SUBJECT, "Prescription");
+                    intent.putExtra(Intent.EXTRA_TEXT,userPhone);
+                    intent.putExtra(Intent.EXTRA_STREAM, pic);
+                    intent.putExtra(Intent.EXTRA_RETURN_RESULT,true);
+                    //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                    if (intent.resolveActivity(getPackageManager()) != null) {
+                        startActivityForResult(intent,60);
+                    }
+                }
             }
-            cursorValue=cursor.moveToNext();
+        }else if(requestCode==60){
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("prescriptionKey",true);
+            editor.commit();
+            getPreferenceCheck();
+        }else{
+            super.onActivityResult(requestCode, resultCode, data);
         }
 
-        String totPrice = "entry_397157865="+ URLEncoder.encode("Total")+"&"+
-                "entry_1281130329="+URLEncoder.encode(String.valueOf(totalPrice));
-        String resp2 = mRequest.sendPost(url,totPrice);
+    }
 
-        String data = "entry_993656695="+ URLEncoder.encode(" ")+"&"+
-                "entry_405352747="+ URLEncoder.encode(" ")+"&"+
-                "entry_1591763232="+ URLEncoder.encode(" ")+"&"+
-                "entry_995971312="+ URLEncoder.encode(" ")+"&"+
-                "entry_167376227="+ URLEncoder.encode(" ")+"&"+
-                "entry_397157865="+ URLEncoder.encode(" ")+"&"+
-                "entry_1330510750="+ URLEncoder.encode(" ")+"&"+
-                "entry_326885020="+ URLEncoder.encode(" ")+"&"+
-                "entry_1732604557="+ URLEncoder.encode(" ")+"&"+
-                "entry_1281130329="+URLEncoder.encode(" ");
+    public void getPreferenceCheck(){
+        //prescription sent or not
+        sharedPreferences= getSharedPreferences("MyPrefs",Context.MODE_PRIVATE);
+        preferenceCheck = sharedPreferences.getBoolean("prescriptionKey",false);
+    }
 
-        String mResponse = mRequest.sendPost(url,data);
+    public Uri getImageFromResult(Context context, int resultCode,
+                                  Intent imageReturnedIntent){
+        Bitmap bm = null;
+        File imageFile = getTempFile(context);
+        Uri selectedImage = null;
+        if (resultCode == Activity.RESULT_OK){
+            boolean isCamera = (imageReturnedIntent == null ||
+                    imageReturnedIntent.getData() == null  ||
+                    imageReturnedIntent.getData().toString().contains(imageFile.toString()));
+            if (isCamera) {
+                Bitmap theImage=(Bitmap) imageReturnedIntent.getExtras().get("data");
+                try{
+                    File root = getExternalFilesDir(null);
+                    Log.d("hello", String.valueOf(root));
+                    if(root.canWrite()){
+                        File pic=new File(root,"prescription.png");
+                        picture = pic;
+                        FileOutputStream out = new FileOutputStream(pic);
+                        theImage.compress(Bitmap.CompressFormat.PNG,100,out);
+                        out.flush();
+                        out.close();
+                    }
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                selectedImage = FileProvider.getUriForFile(context,BuildConfig.APPLICATION_ID+".provider",picture);
+            } else {
+                selectedImage = imageReturnedIntent.getData();
+            }
+        }
+        return selectedImage;
     }
 }

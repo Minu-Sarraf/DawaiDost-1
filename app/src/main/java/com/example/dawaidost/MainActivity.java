@@ -1,6 +1,7 @@
 package com.example.dawaidost;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -12,6 +13,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
@@ -27,6 +29,7 @@ import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -89,10 +92,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
+import static androidx.core.graphics.TypefaceCompatUtil.getTempFile;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+public class MainActivity extends AppCompatActivity{
 
     private AppBarConfiguration mAppBarConfiguration;
 
@@ -104,8 +110,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     static boolean synced = false;
     DrawerLayout drawer;
     private static final int CAMERA_REQUEST = 1888;
+    File picture;
 
     SearchView searchView;
+    SharedPreferences sharedPreferences;
+    String userPhone;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,6 +122,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         setTitle("Home (Dawai Dost)");
 
+        //phone number
+        sharedPreferences = getSharedPreferences("MyPrefs",Context.MODE_PRIVATE);
+        userPhone = sharedPreferences.getString("phoneKey"," ");
 
         //check internet connection
         boolean connected = false;
@@ -154,6 +166,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         .edit()
                         .putBoolean("firstBoot",false)
                         .commit();
+
+                synced=!synced;
             }
 
         }else{
@@ -174,43 +188,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         }
 
-
-/*        //on click floating action button
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                //show items on cart
-                Intent intent =new Intent(MainActivity.this,ShowCart.class);
-                startActivity(intent);
-            }
-        });*/
-
-
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-
-/*        //navigation view
-        drawer = findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(MainActivity.this,drawer,toolbar,R.string.navigation_drawer_open,R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
-
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home,R.id.nav_branches,R.id.nav_cart)
-                .setDrawerLayout(drawer)
-                .build();
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-        NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
-        NavigationUI.setupWithNavController(navigationView, navController);*/
-
-
 
         //showing search match
         recyclerView = findViewById(R.id.recycler_view1);
@@ -240,13 +219,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onClick(View v) {
                 if(ContextCompat.checkSelfPermission(MainActivity.this,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        Manifest.permission.READ_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED){
                     ActivityCompat.requestPermissions(MainActivity.this,
-                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},0);
+                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE},0);
                 }else{
-                    Intent intent= new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    startActivityForResult(intent,CAMERA_REQUEST);
+                    Intent intent = getPickImageIntent(MainActivity.this);
+                    startActivityForResult(intent,1);
                 }
             }
         });
@@ -332,7 +311,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                 editor.putString("nameKey"," ");
                 editor.putString("phoneKey"," ");
-                editor.putString("addresskey"," ");
+                editor.putString("addressKey"," ");
                 editor.commit();
 
                 SQLiteDatabase db = helper.getReadableDatabase();
@@ -348,41 +327,107 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
+    public static Intent getPickImageIntent(Context context){
+        Intent chooserIntent = null;
+
+        List<Intent> intentList = new ArrayList<>();
+        Intent pickIntent = new Intent (Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        Intent takePhotoIntent = new Intent (MediaStore.ACTION_IMAGE_CAPTURE);
+        pickIntent.putExtra("return-data",true);
+        pickIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(getTempFile(context)));
+        intentList = addIntentsToList(context,intentList,pickIntent);
+        intentList = addIntentsToList(context,intentList,takePhotoIntent);
+
+        if(intentList.size()>0){
+            chooserIntent= Intent.createChooser(intentList.remove(intentList.size()-1), "Choose from...");
+            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS,intentList.toArray(new Parcelable[]{}));
+        }
+        return chooserIntent;
+    }
+
+    private static List<Intent> addIntentsToList(Context context,List<Intent> list, Intent intent){
+        List<ResolveInfo> resInfo = context.getPackageManager().queryIntentActivities(intent,0);
+        for(ResolveInfo resolveInfo: resInfo){
+            String packageName = resolveInfo.activityInfo.packageName;
+            Intent targetedIntent= new Intent(intent);
+            targetedIntent.setPackage(packageName);
+            list.add(targetedIntent);
+        }
+        return list;
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        File pic = null;
-        if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
-            Bitmap theImage=(Bitmap) data.getExtras().get("data");
-            try{
-                File root = Environment.getExternalStorageDirectory();
-                if(root.canWrite()){
-                    pic=new File(root,"prescription.png");
-                    FileOutputStream out = new FileOutputStream(pic);
-                    theImage.compress(Bitmap.CompressFormat.PNG,100,out);
-                    out.flush();
-                    out.close();
+
+        if(resultCode!=RESULT_CANCELED){
+            if(requestCode==1){
+                //Log.d("where?","camera2");
+                if(data.getExtras()==null && data.getData()==null){
+                    Log.d("where?","camera");
+                }else{
+                    Uri pic= getImageFromResult(this,resultCode,data);
+                    Intent intent = new Intent(Intent.ACTION_SEND);
+                    intent.setData(Uri.parse("mailto:"));
+                    intent.setType("vnd.android.cursor.dir/email");
+                    intent.putExtra(Intent.EXTRA_EMAIL, new String[] {"minusarraf96@gmail.com"});
+                    intent.putExtra(Intent.EXTRA_SUBJECT, "Prescription");
+                    intent.putExtra(Intent.EXTRA_TEXT,userPhone);
+                    intent.putExtra(Intent.EXTRA_STREAM, pic);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    //intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+                    if (intent.resolveActivity(getPackageManager()) != null) {
+                        startActivity(intent);
+                    }
                 }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
             }
+        } else if(requestCode==60){
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("prescriptionKey",true);
+            editor.commit();
+        }else{
+            super.onActivityResult(requestCode, resultCode, data);
+        }
 
-            Uri uri = FileProvider.getUriForFile(this,BuildConfig.APPLICATION_ID+".provider",pic);
+    }
 
-            Intent intent = new Intent(Intent.ACTION_SENDTO);
-            intent.setType("vnd.android.cursor.dir/email");
-            intent.putExtra(Intent.EXTRA_EMAIL, new String[] {"minusarraf96@gmail.com"});
-            intent.putExtra(Intent.EXTRA_SUBJECT, "Prescription");
-            intent.putExtra(Intent.EXTRA_STREAM, uri);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    public Uri getImageFromResult(Context context, int resultCode,
+                                  Intent imageReturnedIntent) {
+        Bitmap bm = null;
+        File imageFile = getTempFile(context);
+        Uri selectedImage = null;
+        if (resultCode == Activity.RESULT_OK) {
+            
+            boolean isCamera = (imageReturnedIntent == null ||
+                    imageReturnedIntent.getData() == null  ||
+                    imageReturnedIntent.getData().toString().contains(imageFile.toString()));
+            if (isCamera) {
+                Bitmap theImage=(Bitmap) imageReturnedIntent.getExtras().get("data");
+                try{
+                    File root = getExternalFilesDir(null);
+                    Log.d("hello", String.valueOf(root));
+                    if(root.canWrite()){
+                        File pic=new File(root,"prescription.png");
+                        picture = pic;
+                        FileOutputStream out = new FileOutputStream(pic);
+                        theImage.compress(Bitmap.CompressFormat.PNG,100,out);
+                        out.flush();
+                        out.close();
+                    }
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-            if (intent.resolveActivity(getPackageManager()) != null) {
-                startActivity(intent);
+                selectedImage = FileProvider.getUriForFile(context,BuildConfig.APPLICATION_ID+".provider",picture);
+            } else {
+                selectedImage = imageReturnedIntent.getData();
             }
         }
-        super.onActivityResult(requestCode, resultCode, data);
+        return selectedImage;
     }
 
     //show the matched list of dawais
@@ -393,7 +438,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //extracting data from database
         db=helper.getReadableDatabase();
         Cursor cursor = db.query("DAWAI",
-                new String[] {"CODE","TYPE","BRANDNAME","GENERIC"},
+                new String[] {"CODE","PACKING","BRANDNAME","GENERIC"},
                 null,null,null,null,null);
 
         if(mText.length()<searchLength){   //when search length is not enough
@@ -410,7 +455,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             relativeLayout.setVisibility(View.INVISIBLE);
 
             ArrayList<String> code = new ArrayList<>();
-            ArrayList<String> type = new ArrayList<>();
+            ArrayList<String> packing = new ArrayList<>();
             ArrayList<String> brand = new ArrayList<>();
             ArrayList<String> generic = new ArrayList<>();
 
@@ -424,7 +469,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 String sText=mText.toUpperCase(Locale.ENGLISH);
                 if (c.contains(sText) || t.contains(sText)|| b.contains(sText) || g.contains(sText)){
                     code.add(cursor.getString(0));
-                    type.add(cursor.getString(1));
+                    packing.add(cursor.getString(1));
                     brand.add(cursor.getString(2));
                     generic.add(cursor.getString(3));
                 }
@@ -432,18 +477,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
 
             //populating recycler view
-            CustomAdapter customAdapter = new CustomAdapter(MainActivity.this,code,type,brand,generic);
+            CustomAdapter customAdapter = new CustomAdapter(MainActivity.this,code,packing,brand,generic);
             recyclerView.setAdapter(customAdapter);
 
         }
     }
-
- /*   @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }*/
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -454,15 +492,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         return super.onOptionsItemSelected(item);
     }
-
-/*    @Override
-    public void onBackPressed() {
-        if(drawer.isDrawerOpen(GravityCompat.START)){
-            drawer.closeDrawer(GravityCompat.START);
-        }else{
-            super.onBackPressed();
-        }
-    }*/
 
     @Override
     public boolean onSupportNavigateUp() {
@@ -485,7 +514,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 try{
                     //extracting data from json response
                     finalObject=array.getJSONObject(count);
-                    //Log.e("finObj",finalObject.toString());
 
                     String code = String.valueOf(finalObject.get("CODE"));
                     String type = String.valueOf(finalObject.get("TYPE"));
@@ -496,7 +524,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     Float mrp = Float.valueOf((finalObject.get("MRP").toString()));
                     Float price = Float.valueOf(String.valueOf(finalObject.get("PRICE")));
                     Integer maxOrder = Integer.valueOf(String.valueOf(finalObject.get("MAXORDER")));
-                    Log.d("print",code);
+                    Integer prescription = (Integer) finalObject.get("PRESCRIPTION");
 
                     //inserting into table
                     ContentValues contentValues = new ContentValues();
@@ -509,9 +537,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     contentValues.put("MRP",mrp);
                     contentValues.put("PRICE",price);
                     contentValues.put("MAXORDER",maxOrder);
+                    contentValues.put("PRESCRIPTION",prescription);
                     db.insert("DAWAI",null,contentValues);
-
-                    Log.d("print","saved");
                 }catch(JSONException e){
                     e.printStackTrace();
                 }catch(SQLiteException e){
@@ -522,16 +549,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int id= item.getItemId();
-        Log.d("Clicked",String.valueOf(id));
-        if(id==R.id.nav_branches){
-            Toast.makeText(this,"branches",Toast.LENGTH_SHORT).show();
-        }
-        return true;
     }
 
 
@@ -579,7 +596,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         public void onErrorResponse(VolleyError error) {
                             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                             dawaiLoadingDialog.setVisibility(View.GONE);
-                            Toast.makeText(MainActivity.this,"New Data not updated",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this,"Check Your Connection to Fetch Latest Data",Toast.LENGTH_SHORT).show();
                             Log.d("Error.Response", String.valueOf(error));
                         }
                     }

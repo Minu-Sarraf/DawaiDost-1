@@ -5,10 +5,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class Database extends SQLiteOpenHelper {
-    public static String DB_NAME="DX";
+    public static String DB_NAME="DD";
     public static int DB_VERSION=1;
 
-    Database(Context context){
+    public Database(Context context){
         super(context, DB_NAME, null, DB_VERSION);
     }
 
@@ -24,7 +24,8 @@ public class Database extends SQLiteOpenHelper {
                 "PACKING TEXT,"+
                 "MRP FLOAT,"+
                 "PRICE FLOAT,"+
-                "MAXORDER INTEGER)");
+                "MAXORDER INTEGER,"+
+                "PRESCRIPTION INTEGER)");
 
         //table for saving order
         db.execSQL("CREATE TABLE CART(CODE TEXT PRIMARY KEY,"+
@@ -34,7 +35,12 @@ public class Database extends SQLiteOpenHelper {
                 "COMPANY TEXT,"+
                 "PRICE FLOAT,"+
                 "MAXORDER INTEGER,"+
-                "TOTAL FLOAT)");
+                "TOTAL FLOAT,"+
+                "PRESCRIPTION INTEGER)");
+
+        //table for regular order
+        db.execSQL("CREATE TABLE REGULARORDER(CODE TEXT,"+
+                "QUANTITY INTEGER)");
     }
 
     @Override
