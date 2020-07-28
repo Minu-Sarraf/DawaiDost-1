@@ -12,7 +12,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.app.ActionBar;
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -30,20 +32,35 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.text.format.Formatter;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -67,12 +84,15 @@ public class ShowCart extends AppCompatActivity {
     ArrayList<String> brand = new ArrayList<>();
     public CartAdapter adapter;
     String address, ip;
-    double latitude, longitude;
     Float totalPrice= Float.valueOf(0);
     Cursor cursor;
     boolean connected = false;
     int valuePrescription=0;
     File picture;
+
+    ProgressBar deliveryDialog;
+
+    SQLiteDatabase db;
 
     final static Integer emailCode = 1000;
 
@@ -88,19 +108,20 @@ public class ShowCart extends AppCompatActivity {
         setContentView(R.layout.activity_show_cart);
         setTitle("My Cart");
 
-        //setting avail Pincodes
-        PinCode.add("834001");
-        PinCode.add("834002");
-        PinCode.add("834003");
-        PinCode.add("834004");
-        PinCode.add("834005");
-        PinCode.add("834006");
-        PinCode.add("834007");
-        PinCode.add("834008");
-        PinCode.add("834009");
-        PinCode.add("834010");
-        PinCode.add("834217");
-        PinCode.add("834219");
+        db=helper.getReadableDatabase();
+
+        //Show progressbar while volley request is serviced
+        deliveryDialog = new ProgressBar(this,null,android.R.attr.progressBarStyleLargeInverse);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
+        params.gravity = Gravity.CENTER;
+        ((FrameLayout)getWindow().getDecorView().findViewById(android.R.id.content)).addView(deliveryDialog,params);
+        deliveryDialog.setVisibility(View.VISIBLE);  //To show ProgressBar
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+
+        ShowCart.GetData getData = new ShowCart.GetData();
+        getData.execute("hello");
+
 
         //back button
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -129,7 +150,7 @@ public class ShowCart extends AppCompatActivity {
         fb.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(valuePrescription>0 && preferenceCheck==false){
+                if(valuePrescription>0 && !preferenceCheck){
                     final AlertDialog.Builder builder = new AlertDialog.Builder(ShowCart.this);
                     builder.setTitle("Prescription");
                     builder.setMessage("Please send prescription for the selected medicines!");
@@ -166,7 +187,6 @@ public class ShowCart extends AppCompatActivity {
 
         try {
             //showing items in cart
-            SQLiteDatabase db = helper.getReadableDatabase();
 
             cursor = db.query("CART",
                     new String[]{"CODE","TYPE","BRANDNAME","GENERIC","COMPANY","PRICE", "MAXORDER", "TOTAL","PRESCRIPTION"},
@@ -184,7 +204,7 @@ public class ShowCart extends AppCompatActivity {
                 valuePrescription += cursor.getInt(8);
                 cursorValue= cursor.moveToNext();
             }
-
+            cursor.close();
         }catch(SQLiteException e) {
             Toast toast = Toast.makeText(ShowCart.this, "Database Unavailable", Toast.LENGTH_SHORT);
             toast.show();
@@ -194,18 +214,47 @@ public class ShowCart extends AppCompatActivity {
         TextView textView = findViewById(R.id.showPrice);
 
         String pin = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).getString("pinKey"," ");
-        Integer delCharge;
-        if(PinCode.contains(pin)){
-            delCharge=20;
-        }else{
-            delCharge=50;
+        Integer delCharge=0;
+        Cursor cursor1 = db.query("RATE",
+                new String[] {"RATE"},
+                "DELIVERYTYPE=?",
+                new String[]{"Local"},
+                null,null,null);
+        boolean cursorValue1=cursor1.moveToFirst();
+
+        Cursor cursor2 = db.query("RATE",
+                new String[] {"RATE"},
+                "DELIVERYTYPE=?",
+                new String[]{"Non Local"},
+                null,null,null);
+        boolean cursorValue2 = cursor2.moveToFirst();
+
+        if(PinCode.contains(pin) && cursorValue1){
+            delCharge= Integer.valueOf(cursor1.getString(0));
+        }else if(cursorValue2){
+            delCharge= Integer.valueOf(cursor2.getString(0));
         }
+        cursor1.close();
+        cursor2.close();
+
+        Cursor cursor3 = db.query("RATE",
+                new String[] {"PRICE"},
+                "DELIVERYTYPE=?",
+                new String[]{"Free Delivery"},
+                null,null,null);
+        int freeDelivery;
+        if(cursor3.moveToFirst()){
+            freeDelivery = Integer.parseInt(cursor3.getString(0));
+            if(totalPrice>freeDelivery){
+                delCharge=0;
+            }
+        }
+
         totalPrice=totalPrice+delCharge;
         textView.setText(" Rs "+String.format("%.02f",totalPrice) );
 
         textView = findViewById(R.id.showDeliveryPrice);
         textView.setText(" Rs "+delCharge);
-
 
         if (code.size()==0){
             ImageView image = findViewById(R.id.logo);
@@ -366,5 +415,96 @@ public class ShowCart extends AppCompatActivity {
             }
         }
         return selectedImage;
+    }
+
+    public void storeDelivery(JSONObject response){
+        try {
+            JSONArray array = response.getJSONArray("DEL");
+            int totalData = array.length();
+            JSONObject finalObject;
+
+            int count=0;
+            while(count<totalData){
+                try{
+                    //extracting data from json response
+                    finalObject=array.getJSONObject(count);
+
+                    String deliveryType = String.valueOf(finalObject.get("DELIVERY_TYPE"));
+                    String price =String.valueOf(finalObject.get("PRICE"));
+                    String rate =String.valueOf(finalObject.get("RATE"));
+                    String localZip =String.valueOf(finalObject.get("LOCAL_ZIP"));
+
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put("DELIVERYTYPE",deliveryType);
+                    contentValues.put("PRICE",price);
+                    contentValues.put("RATE",rate);
+                    contentValues.put("LOCALZIP",localZip);
+
+                    db.insert("RATE",null,contentValues);
+
+                    PinCode.add(localZip);
+
+                }catch(JSONException e){
+                    e.printStackTrace();
+                }
+                count += 1;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public class GetData extends AsyncTask<String, Integer, JSONObject> {
+        //get request to a google sheet
+        private JSONObject finalResponse = new JSONObject();
+
+        @Override
+        protected JSONObject doInBackground(String... voids) {
+            publishProgress(5);
+
+            RequestQueue queue = Volley.newRequestQueue(ShowCart.this);
+            //url of the google sheet
+            //it should be kept in separate file at one place
+            final String url = "https://script.google.com/macros/s/AKfycbxOLElujQcy1-ZUer1KgEvK16gkTLUqYftApjNCM_IRTL3HSuDk/exec?id=1XcU1TbA56-JNM0Qsj9ihyt3mgzFGVWeHFFIUn-7_4wM&sheet=DEL";
+            JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+                    new Response.Listener<JSONObject>()
+                    {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                JSONArray arr = response.getJSONArray("DEL");
+
+                                //progressbar for syncing dawai
+                                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                                deliveryDialog.setVisibility(View.GONE);
+
+                                db.delete("RATE",null,null);
+
+                                storeDelivery(response);
+
+                            } catch (JSONException e) {
+                                Log.d("Error.Response", "fail");
+                                e.printStackTrace();
+                            }
+                            finalResponse= response;
+
+                        }
+                    },
+                    new Response.ErrorListener()
+                    {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                            deliveryDialog.setVisibility(View.GONE);
+                            Toast.makeText(ShowCart.this,"Check Your Connection to Fetch Latest Data",Toast.LENGTH_SHORT).show();
+                            Log.d("Error.Response", String.valueOf(error));
+                        }
+                    }
+            );
+            queue.add(getRequest);
+            //mResponse=finalResponse;
+            return finalResponse;
+        }
+
     }
 }

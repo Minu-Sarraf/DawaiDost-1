@@ -4,19 +4,101 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/home_fragment"
     tools:context=".ui.home.HomeFragment">
 
-    <ImageView
-        android:id="@+id/image_home"
+    <SearchView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:id="@+id/searchView"
+        android:iconifiedByDefault="false"
+        android:queryHint="Search Medicine"
+        android:autofillHints="Search Medicine"
+        android:focusable="false"
         app:layout_constraintTop_toTopOf="parent" />
 
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_below="@id/searchView"
+
+        app:layout_constraintTop_toBottomOf="@id/searchView"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:padding="@dimen/margin_top"/>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:id="@+id/relativeLayout"
+        android:layout_below="@+id/searchView"
+        android:orientation="vertical"
+
+        app:layout_constraintTop_toBottomOf="@id/searchView"
+        app:layout_constraintBottom_toTopOf="@id/relativeLayout2">
+
+        <ImageView
+            android:id="@+id/samajhdar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/samajhdar" />
+
+        <TextView
+            android:id="@+id/home_page2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Upto 85% Discount on Generic Medicines"
+            android:textSize="18sp"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"/>
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/prescription"
+            android:src="@mipmap/prescription"/>
+
+        <ImageView
+            android:id="@+id/home_page"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/home_page"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/relativeLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/relativeLayout">
+
+        <TextView
+            android:id="@+id/homeText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="www.DawaiDost.com"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:autoLink="web" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Helpline Number: 7677807777"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:layout_marginBottom="10dp"/>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

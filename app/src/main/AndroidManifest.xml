@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.dawaidost">
+    package="com.example.ddost">
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/dawai_dost_logo"
@@ -8,60 +9,58 @@
         android:roundIcon="@mipmap/dawai_dost_logo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".ForgotPassword" android:screenOrientation="portrait"/>
+        <activity android:name=".NoConnection" android:screenOrientation="portrait"/>
+        <activity android:name=".SendQuery" android:screenOrientation="portrait"/>
+        <activity android:name=".Splash" android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-    <activity
-        android:name=".MyCart"
-        android:label="@string/title_activity_my_cart"
-        ></activity>
-    <activity
-        android:name=".ConfirmOrder"
-        android:theme="@style/OrderTheme" />
-    <activity
-        android:name=".UpdateDetails"
-        android:theme="@style/OrderTheme" />
-    <activity
-        android:name=".LoginPage"
-        android:windowSoftInputMode="stateAlwaysHidden" />
-    <activity android:name=".Branches" />
-    <activity android:name=".NoConnection" />
-    <activity android:name=".Splash">
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".SignUp"
+            android:windowSoftInputMode="stateAlwaysHidden"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".LoginPage" android:screenOrientation="portrait"/>
+        <activity
+            android:name=".ConfirmOrder"
+            android:theme="@style/Theme.AppCompat.Light.Dialog"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".UpdateDetails"
+            android:theme="@style/Theme.AppCompat.Light.Dialog"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".LoadWebView" android:screenOrientation="portrait"/>
+        <activity android:name=".IntroduceFriend" android:screenOrientation="portrait"/>
+        <activity android:name=".UserInfo" android:screenOrientation="portrait"/>
+        <activity
+            android:name=".ShowCart"
+            android:windowSoftInputMode="adjustPan"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".AddCart" android:screenOrientation="portrait"/>
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:windowSoftInputMode="adjustPan"
+            android:screenOrientation="portrait"/>
 
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
-    </activity>
-
-    <activity
-        android:name=".ShowCart" />
-
-    <activity android:name=".AddCart" />
-
-    <activity
-        android:name=".MainActivity"
-        android:label="@string/app_name"
-        android:theme="@style/AppTheme.NoActionBar"
-        android:windowSoftInputMode="stateAlwaysHidden|adjustPan" />
-
-    <provider
-        android:name="androidx.core.content.FileProvider"
-        android:authorities="${applicationId}.provider"
-        android:exported="false"
-        android:grantUriPermissions="true">
-        <meta-data
-            android:name="android.support.FILE_PROVIDER_PATHS"
-            android:resource="@xml/provider_paths" />
-    </provider>
-</application>
-
-
-    <uses-permission android:name="android.permission.INTERNET" />
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
+    </application>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
 </manifest>

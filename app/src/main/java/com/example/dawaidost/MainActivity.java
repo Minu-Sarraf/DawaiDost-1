@@ -56,8 +56,13 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.dawaidost.ui.main.CartFragment;
+import com.example.dawaidost.ui.main.RegularOrderFragment;
+import com.example.dawaidost.ui.main.SectionsPagerAdapter;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.tabs.TabLayout;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 import com.leinardi.android.speeddial.SpeedDialView;
@@ -71,6 +76,8 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.GravityCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -82,6 +89,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.ViewPager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -115,12 +123,16 @@ public class MainActivity extends AppCompatActivity{
     SearchView searchView;
     SharedPreferences sharedPreferences;
     String userPhone;
+    BottomNavigationView bottomNavigation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setTitle("Home (Dawai Dost)");
+
+        bottomNavigation = findViewById(R.id.bottom_navigation);
+        bottomNavigation.setOnNavigationItemSelectedListener(navigationItemSelectedListener);
 
         //phone number
         sharedPreferences = getSharedPreferences("MyPrefs",Context.MODE_PRIVATE);
@@ -133,10 +145,6 @@ public class MainActivity extends AppCompatActivity{
                 connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
             connected = true;
         }
-        else{
-            connected = false;
-        }
-
 
         //getdata for the first boot
         boolean firstBoot = getSharedPreferences("BOOT_PREF",MODE_PRIVATE).getBoolean("firstBoot",true);
@@ -248,8 +256,9 @@ public class MainActivity extends AppCompatActivity{
                         intent =new Intent(MainActivity.this,ShowCart.class);
                         startActivity(intent);
                         return false;
-                    case R.id.nav_logout:
-                        onClickLogOut();
+                    case R.id.nav_editInfo:
+                        intent = new Intent(MainActivity.this, EditInfo.class);
+                        startActivity(intent);
                         return false;
                     default:
                         return false;
@@ -281,50 +290,15 @@ public class MainActivity extends AppCompatActivity{
         );
 
         speedDialView.addActionItem(
-                new SpeedDialActionItem.Builder(R.id.nav_logout, R.mipmap.logout)
+                new SpeedDialActionItem.Builder(R.id.nav_editInfo, R.mipmap.noorder)
                         .setFabBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.yellow, getTheme()))
                         .setFabImageTintColor(ResourcesCompat.getColor(getResources(), R.color.dark, getTheme()))
-                        .setLabel("Log Out")
+                        .setLabel("Edit Info")
                         .setLabelColor(Color.BLACK)
                         .setLabelBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.yellow, getTheme()))
                         .setLabelClickable(false)
                         .create()
         );
-    }
-
-    public void onClickLogOut(){
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setTitle("Do you want to log out? You may loose your data!");
-
-        dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-
-        dialog.setPositiveButton("Log Out", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs",Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-
-                editor.putString("nameKey"," ");
-                editor.putString("phoneKey"," ");
-                editor.putString("addressKey"," ");
-                editor.commit();
-
-                SQLiteDatabase db = helper.getReadableDatabase();
-                db.delete("CART", null, null);
-
-                Intent intent = new Intent(MainActivity.this, LoginPage.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-                finish();
-            }
-        });
-        dialog.create().show();
-
     }
 
     public static Intent getPickImageIntent(Context context){
@@ -504,7 +478,7 @@ public class MainActivity extends AppCompatActivity{
     public void saveToDB(JSONObject mResponse){
         //saving data from google sheet into database
         try {
-            JSONArray array = mResponse.getJSONArray("Sheet1");
+            JSONArray array = mResponse.getJSONArray("Med");
             int totalData = array.length();
             JSONObject finalObject;
             db=helper.getReadableDatabase();
@@ -564,14 +538,14 @@ public class MainActivity extends AppCompatActivity{
             RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
             //url of the google sheet
             //it should be kept in separate file at one place
-            final String url = "https://script.google.com/macros/s/AKfycbxOLElujQcy1-ZUer1KgEvK16gkTLUqYftApjNCM_IRTL3HSuDk/exec?id=1Otp-z4nZshefjvji-tBIKqyG6fO74G6sXZ9TfmMlQfI&sheet=Sheet1";
+            final String url = "https://script.google.com/macros/s/AKfycbxOLElujQcy1-ZUer1KgEvK16gkTLUqYftApjNCM_IRTL3HSuDk/exec?id=1XcU1TbA56-JNM0Qsj9ihyt3mgzFGVWeHFFIUn-7_4wM&sheet=Med";
             JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.GET, url, null,
                     new Response.Listener<JSONObject>()
                     {
                         @Override
                         public void onResponse(JSONObject response) {
                             try {
-                                JSONArray arr = response.getJSONArray("Sheet1");
+                                JSONArray arr = response.getJSONArray("Med");
 
                                 //progressbar for syncing dawai
                                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
@@ -613,5 +587,39 @@ public class MainActivity extends AppCompatActivity{
         super.onDestroy();
     }
 
+    BottomNavigationView.OnNavigationItemSelectedListener navigationItemSelectedListener =
+            new BottomNavigationView.OnNavigationItemSelectedListener() {
+                @Override
+                public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                    switch(item.getItemId()){
+                        case R.id.navigation_home:
+                            Toast.makeText(MainActivity.this,"Home", Toast.LENGTH_SHORT).show();
+                            return true;
+                        case R.id.navigation_branches:
+                            Toast.makeText(MainActivity.this,"branches", Toast.LENGTH_SHORT).show();
+                            Log.d("home","home");
+                            return true;
+                        case R.id.navigation_account:
+                            Toast.makeText(MainActivity.this,"account", Toast.LENGTH_SHORT).show();
+                            Log.d("home","home");
+                            return true;
+                        case R.id.navigation_subscription:
+                            Toast.makeText(MainActivity.this,"subscccription", Toast.LENGTH_SHORT).show();
+                            Log.d("home","home");
+                            return true;
+                        case R.id.navigation_MyCart:
+                            Toast.makeText(MainActivity.this,"my cart", Toast.LENGTH_SHORT).show();
+                            Log.d("home","home");
+                            return true;
+                    }
+                    return false;
+                }
+            };
 
+    public void openFragment(Fragment fragment) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.container, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
+    }
 }

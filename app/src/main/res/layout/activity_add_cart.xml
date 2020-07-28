@@ -149,7 +149,33 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="PRICE : Rs "
+            android:text="MRP: "
+            android:textSize="@dimen/text_size"
+            android:textColor="@color/dark"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/mrp"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+
+            android:textSize="@dimen/text_size"
+            android:textColor="@color/dark"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="@dimen/margin_top">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="DD Price: "
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
             />
@@ -161,8 +187,7 @@
             android:paddingLeft="@dimen/activity_horizontal_margin"
 
             android:textSize="@dimen/text_size"
-            android:textColor="@color/dark"
-            />
+            android:textColor="@color/dark" />
 
     </LinearLayout>
 
@@ -195,7 +220,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_margin="@dimen/fab_margin"
+        android:layout_margin="@dimen/activity_vertical_margin"
         android:src="@mipmap/add_cart"
         android:tint="@android:color/white"/>
 

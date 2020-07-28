@@ -35,7 +35,7 @@ public class BranchAdapter extends RecyclerView.Adapter<BranchAdapter.MyViewHold
             super(itemView);
             textCode= (TextView) itemView.findViewById(R.id.code);
             textGeneric = (TextView) itemView.findViewById(R.id.text1);
-            textGeneric.setPaintFlags(textGeneric.getPaintFlags() |   Paint.UNDERLINE_TEXT_FLAG);
+            textGeneric.setPaintFlags(textGeneric.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
             textPrice = (TextView) itemView.findViewById(R.id.text2);
             imageView = (ImageView) itemView.findViewById(R.id.image);
 

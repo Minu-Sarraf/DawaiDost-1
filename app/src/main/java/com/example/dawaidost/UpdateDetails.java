@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.style.UpdateAppearance;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -29,8 +30,6 @@ public class UpdateDetails extends AppCompatActivity {
     public static final String AltPhone="altPhoneKey";
     public static final String Email ="emailKey";
     public static final String Landmark ="landmarkKey";
-
-    String tableName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +62,7 @@ public class UpdateDetails extends AppCompatActivity {
         phone.setText(savedPhone);
         altPhone.setText(savedAltPhone);
         email.setText(savedEmail);
+        landmark.setText(savedLandmark);
 
         loginButton=findViewById(R.id.buttonLogin);
         sharedPreferences=getSharedPreferences(MYPREFERENCES, Context.MODE_PRIVATE);
@@ -78,6 +78,15 @@ public class UpdateDetails extends AppCompatActivity {
                 final String uAltPhone= altPhone.getText().toString();
                 final String uEmail= email.getText().toString();
                 final String uLandmark = landmark.getText().toString();
+
+/*                Log.d("check", String.valueOf(uAltPhone.equals(savedAltPhone)));
+                Log.d("check", String.valueOf(uName.equals(savedName)));
+                Log.d("check", String.valueOf(uAge.equals(savedAge)));
+                Log.d("check", String.valueOf(uAddress.equals(savedAddress)));
+                Log.d("check", String.valueOf(uPin.equals(savedPincode)));
+                Log.d("check", String.valueOf(uPhone.equals(savedPhone)));
+                Log.d("check", String.valueOf(uEmail.equals(savedEmail)));
+                Log.d("check", String.valueOf(uLandmark.equals(savedLandmark)));*/
 
                 Thread t = new Thread(new Runnable() {
                     @Override
@@ -98,17 +107,21 @@ public class UpdateDetails extends AppCompatActivity {
                     phone.setError("Please Enter a valid Phone Number!");
                 }else if(uEmail.length()==0){
                     email.setError("Please enter a valid email!");
+                }else if(uLandmark.length()==0){
+                    landmark.setError("Please enter your nearest landmark!");
+                }else if(!uName.equals(savedName) || !uAge.equals(savedAge) || !uAddress.equals(savedAddress) || !uPin.equals(savedPincode) || !uPhone.equals(savedPhone) || !uAltPhone.equals(savedAltPhone) || !uEmail.equals(savedEmail) || !uLandmark.equals(savedLandmark)){
+                    t.start();
+                    saveUserData(uName,uAge,uAddress,uPin,uPhone,uAltPhone,uEmail,uLandmark);
                 }else{
-                    if(uName!=savedName || uAge!=savedAge || uAddress!=savedAddress || uPin!=savedPincode || uPhone!=savedPhone || uAltPhone!=savedAltPhone || uEmail!=savedEmail || uLandmark!=savedLandmark){
-                        t.start();
-                        saveUserData(uName,uAge,uAddress,uPin,uPhone,uAltPhone,uEmail);
-                    }
+                    Intent intent = new Intent(UpdateDetails.this,ConfirmOrder.class);
+                    startActivity(intent);
+                    finish();
                 }
             }
         });
     }
 
-    public void saveUserData(String uName, String uAge, String uAddress, String uPin, String uPhone, String uAltPhone, String uEmail){
+    public void saveUserData(String uName, String uAge, String uAddress, String uPin, String uPhone, String uAltPhone, String uEmail, String uLandmark){
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
@@ -119,11 +132,11 @@ public class UpdateDetails extends AppCompatActivity {
         editor.putString(Phone,uPhone);
         editor.putString(AltPhone,uAltPhone);
         editor.putString(Email,uEmail);
+        editor.putString(Landmark,uLandmark);
         editor.commit();
 
 
         Intent intent = new Intent(UpdateDetails.this,ConfirmOrder.class);
-        intent.putExtra("TABLE_NAME",tableName);
         startActivity(intent);
         finish();
     }

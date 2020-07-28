@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class Database extends SQLiteOpenHelper {
-    public static String DB_NAME="DD";
+    public static String DB_NAME="DDost";
     public static int DB_VERSION=1;
 
     public Database(Context context){
@@ -41,6 +41,17 @@ public class Database extends SQLiteOpenHelper {
         //table for regular order
         db.execSQL("CREATE TABLE REGULARORDER(CODE TEXT,"+
                 "QUANTITY INTEGER)");
+
+        //table for branches
+        db.execSQL("CREATE TABLE BRANCHES(LOCATION TEXT,"+
+                "LINK TEXT,"+
+                "OPENTIME TEXT)");
+
+        //table for delivery charges
+        db.execSQL("CREATE TABLE RATE(DELIVERYTYPE TEXT,"+
+                "PRICE TEXT,"+
+                "RATE TEXT,"+
+                "LOCALZIP TEXT)");
     }
 
     @Override

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_home"
+        android:enabled="true"
+        android:icon="@mipmap/home"
+        android:title="Home" />
+    <item
+        android:id="@+id/navigation_branches"
+        android:icon="@mipmap/branch_icon"
+        android:enabled="true"
+        android:title="Branches" />
+    <item
+        android:id="@+id/navigation_account"
+        android:title="Account" />
+    <item
+        android:id="@+id/navigation_subscription"
+        android:title="Subscription" />
+    <item
+        android:id="@+id/navigation_MyCart"
+        android:title="My Cart"
+        android:icon="@drawable/add_cart"/>
+</menu>

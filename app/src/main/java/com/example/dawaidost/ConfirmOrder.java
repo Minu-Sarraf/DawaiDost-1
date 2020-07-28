@@ -34,7 +34,7 @@ public class ConfirmOrder extends AppCompatActivity {
     TextView orderSent;
     Button button, okButton;
 
-    Thread t;
+    Thread thread;
     ProgressBar progressBar;
 
     SQLiteOpenHelper helper = new Database(ConfirmOrder.this);
@@ -60,7 +60,7 @@ public class ConfirmOrder extends AppCompatActivity {
         orderSent = findViewById(R.id.sentText);
         okButton = findViewById(R.id.buttonDone);
 
-        t = new Thread(new Runnable() {
+        thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 postData();
@@ -120,8 +120,8 @@ public class ConfirmOrder extends AppCompatActivity {
                     WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
 
             orderResult="Thank You! Your order has been sent.";
-            t.start();
-            while(t.isAlive()){
+            thread.start();
+            while(thread.isAlive()){
                 if(mResponse!=null){
                     getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                     progressBar.setVisibility(View.GONE);
@@ -137,7 +137,7 @@ public class ConfirmOrder extends AppCompatActivity {
     public void postData(){
         //phone number
         sharedPreferences=getSharedPreferences(MYPREFERENCES,Context.MODE_PRIVATE);
-        String phone =sharedPreferences.getString(Phone,"");
+        String phone =sharedPreferences.getString(Phone," ");
 
         //getting ip address
         WifiManager manager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);

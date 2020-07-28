@@ -34,7 +34,7 @@ public class LoginPage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_page);
-        setTitle("Login Page");
+        setTitle("Please Fill Up the Information");
 
         name = findViewById(R.id.userName);
         age = findViewById(R.id.userAge);
@@ -128,7 +128,6 @@ public class LoginPage extends AppCompatActivity {
         if(mResponse!=null){
 
         }
-
     }
 
 }

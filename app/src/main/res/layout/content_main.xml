@@ -19,16 +19,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:navGraph="@navigation/mobile_navigation" />
 
-
-        <!--<com.mancj.materialsearchbar.MaterialSearchBar
-            app:speechMode="false"
-            app:hint="Search Medicines"
-            app:maxSuggestionsCount="10"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/searchBar"
-            android:layout_weight="6"/>-->
-
     <SearchView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -37,15 +27,6 @@
         android:queryHint="Search Medicine"
         android:autofillHints="Search Medicine"
         android:focusable="false" />
-
-<!--
-        <com.jaredrummler.materialspinner.MaterialSpinner
-            android:id="@+id/spinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_weight="14"/>
--->
 
 
     <androidx.recyclerview.widget.RecyclerView
@@ -58,10 +39,10 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:id="@+id/relativeLayout"
         android:layout_below="@+id/searchView"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="2dp"
         android:orientation="vertical">
 
         <ImageView
@@ -82,7 +63,7 @@
 
         <ImageView
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="120dp"
             android:src="@mipmap/prescription"
             android:id="@+id/prescription" />
 
@@ -115,9 +96,6 @@
             android:textColor="@android:color/black"
             android:layout_below="@id/homeText" />
 
-
     </LinearLayout>
-
-
 
 </RelativeLayout>

@@ -3,41 +3,36 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/nav_home">
+    app:startDestination="@+id/navigation_home">
 
     <fragment
-        android:id="@+id/nav_home"
-        android:name="com.example.dawaidost.ui.home.HomeFragment"
-        android:label="@string/menu_home"
-        tools:layout="@layout/fragment_home">
-
-        <action
-            android:id="@+id/action_HomeFragment_to_HomeSecondFragment"
-            app:destination="@id/nav_home_second" />
-    </fragment>
-    <fragment
-        android:id="@+id/nav_home_second"
-        android:name="com.example.dawaidost.ui.home.HomeSecondFragment"
-        android:label="@string/home_second"
-        tools:layout="@layout/fragment_home_second">
-        <action
-            android:id="@+id/action_HomeSecondFragment_to_HomeFragment"
-            app:destination="@id/nav_home" />
-
-        <argument
-            android:name="myArg"
-            app:argType="string" />
-    </fragment>
+        android:id="@+id/navigation_home"
+        android:name="com.example.ddost.ui.home.HomeFragment"
+        android:label="@string/title_home"
+        tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/nav_gallery"
-        android:name="com.example.dawaidost.ui.gallery.GalleryFragment"
-        android:label="@string/menu_gallery"
-        tools:layout="@layout/fragment_gallery" />
+        android:id="@+id/navigation_dashboard"
+        android:name="com.example.ddost.ui.branch.BranchFragment"
+        android:label="@string/title_branch"
+        tools:layout="@layout/fragment_branch" />
 
     <fragment
-        android:id="@+id/nav_slideshow"
-        android:name="com.example.dawaidost.ui.slideshow.SlideshowFragment"
-        android:label="@string/menu_slideshow"
-        tools:layout="@layout/fragment_slideshow" />
+        android:id="@+id/navigation_cart"
+        android:name="com.example.ddost.ui.cart.CartFragment"
+        android:label="@string/title_cart"
+        tools:layout="@layout/fragment_cart" />
+
+    <fragment
+        android:id="@+id/navigation_subscription"
+        android:name="com.example.ddost.ui.subscription.SubscriptionFragment"
+        android:label="@string/title_subscription"
+        tools:layout="@layout/fragment_subscription" />
+
+    <fragment
+        android:id="@+id/navigation_account"
+        android:name="com.example.ddost.ui.account.AccountFragment"
+        android:label="@string/title_account"
+        tools:layout="@layout/fragment_account" />
+
 </navigation>
