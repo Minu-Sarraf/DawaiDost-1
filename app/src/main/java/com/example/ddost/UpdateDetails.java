@@ -82,26 +82,31 @@ public class UpdateDetails extends AppCompatActivity {
     }
 
     public void validateData(){
-        if(uPhone.length()!=10) {
+        if(uPhone.trim().length()!=10) {
             userPhone.setError("Please Enter a valid Phone Number!");
-        }else if (uName.length()==0){
-            userName.setError("This field cannot be empty");
-        }else if(userAge.length()<2) {
-            userAge.setError("Cannot accept order from age under 20");
-        }else if(uEmail.length()==0 || !pValue.isValidEmail(uEmail)){
+        }else if (uName.trim().length()<2 ){
+            userName.setError("Please enter your full name!");
+        }else if(uAge.trim().length()==0){
+            userAge.setError("Please enter your age!");
+        }else if(Integer.parseInt(uAge)<18) {
+            userAge.setError("Cannot accept order from age under 18!");
+        }else if(uEmail.length()==0 || !pValue.isValidEmail(uEmail.trim())){
             userEmail.setError("Please enter a valid Email Address!");
-        }else if(uAddress.length()==0) {
-            userAddress.setError("This field cannot be empty");
-        }else if(uPin.length()!=6){
+        }else if(uAddress.trim().length()<2) {
+            userAddress.setError("Please enter a valid address!");
+        }else if(uPin.trim().length()!=6){
             userPin.setError("Please enter a valid pin number!");
         }else{
-            uPassword=pValue.getPassword();
-            if(uPhone!=pValue.getPhone() || uName!=pValue.getName() || uAge!=pValue.getAge() || uEmail!=pValue.getEmail() || uAddress!=pValue.getAddress() || uPin!=pValue.getPincode()){
+            if(!uPhone.equals(pValue.getPhone()) || !uName.equals(pValue.getName()) || !uAge.equals(pValue.getAge()) || !uEmail.equals(pValue.getEmail()) || !uAddress.equals(pValue.getAddress()) || !uPin.equals(pValue.getPincode())){
                 id=uPhone;
                 new DeleteDataActivity().execute();
-
-                pValue.setValues(uPhone,uName,uAge,uAddress,uPin,uEmail,uPassword,pValue.getQuestion(),pValue.getAnswer());
+                pValue.setValues(uPhone,uName,uAge,uAddress,uPin,uEmail,pValue.getPassword(),pValue.getQuestion(),pValue.getAnswer());
+            }else{
+                Intent intent = new Intent(UpdateDetails.this,ConfirmOrder.class);
+                startActivity(intent);
+                finish();
             }
+
         }
     }
 
@@ -115,7 +120,7 @@ public class UpdateDetails extends AppCompatActivity {
                 "entry_957026713="+ URLEncoder.encode(uAddress)+"&"+
                 "entry_447845151="+ URLEncoder.encode(uPin)+"&"+
                 "entry_733184386="+ URLEncoder.encode(uEmail)+"&"+
-                "entry_2069835835="+ URLEncoder.encode(encrypt.encryptThisString(uPassword))+"&"+
+                "entry_2069835835="+ URLEncoder.encode(encrypt.encryptThisString(pValue.getPassword()))+"&"+
                 "entry_2101863006="+ URLEncoder.encode(pValue.getQuestion())+"&"+
                 "entry_24963331="+ URLEncoder.encode(pValue.getAnswer());
 
@@ -123,18 +128,21 @@ public class UpdateDetails extends AppCompatActivity {
         sendSheet.execute();
     }
 
-    class DeleteDataActivity extends AsyncTask<Void, Void, Void> {
+    public class DeleteDataActivity extends AsyncTask<Void, Void, Void> {
 
         ProgressDialog dialog;
         int jIndex;
         int x;
         String result=null;
+        SharedPreferencesValue pValue;
+        Context context;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            context=UpdateDetails.this;
 
-            dialog = new ProgressDialog(UpdateDetails.this);
+            dialog = new ProgressDialog(context);
             dialog.setTitle("Wait Please...");
             dialog.setMessage("Saving... ");
             dialog.show();
@@ -167,10 +175,10 @@ public class UpdateDetails extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             dialog.dismiss();
-            Toast.makeText(getApplicationContext(),"Saved", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context,"Saved", Toast.LENGTH_SHORT).show();
             updateData();
-            Intent intent = new Intent(UpdateDetails.this,ConfirmOrder.class);
-            startActivity(intent);
+            Intent intent = new Intent(context,ConfirmOrder.class);
+            context.startActivity(intent);
             finish();
         }
     }

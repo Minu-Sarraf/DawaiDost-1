@@ -84,10 +84,10 @@ public class ForgotPassword extends AppCompatActivity {
                 phoneNumber=phone.getText().toString();
                 securityAnswer=answer.getText().toString();
 
-                if(phoneNumber.length()==0){
-                    phone.setError("Please enter your number!");
-                }else if(securityAnswer.length()==0){
-                    answer.setError("Please enter your answer!");
+                if(phoneNumber.trim().length()!=10){
+                    phone.setError("Please enter a valid number!");
+                }else if(securityAnswer.trim().length()<2){
+                    answer.setError("Please enter a valid text!");
                 }else{
                     GetCustomers getCustomers = new GetCustomers();
                     getCustomers.execute();
@@ -148,7 +148,6 @@ public class ForgotPassword extends AppCompatActivity {
                             }
 
                             new DeleteDataActivity().execute();
-
                             dialog.dismiss();
                         }
                     });
@@ -201,9 +200,16 @@ public class ForgotPassword extends AppCompatActivity {
         switch (item.getItemId()){
             case android.R.id.home:
                 finish();
+                overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_right);
 
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_right);
     }
 
     public class GetCustomers extends AsyncTask<Void, Void, Void> {
@@ -230,15 +236,18 @@ public class ForgotPassword extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             dialog.dismiss();
-            checkUser();
+            if(mResponse!=null){
+                checkUser();
+            }else{
+                Toast.makeText(ForgotPassword.this,"No internet Connection",Toast.LENGTH_SHORT).show();
+            }
+
         }
     }
 
     class DeleteDataActivity extends AsyncTask<Void, Void, Void> {
 
         ProgressDialog dialog;
-        int jIndex;
-        int x;
         String result=null;
 
         @Override
@@ -249,7 +258,6 @@ public class ForgotPassword extends AppCompatActivity {
             dialog.setTitle("Wait Please...");
             dialog.setMessage("Saving... ");
             dialog.show();
-
         }
 
         @Nullable
@@ -260,13 +268,11 @@ public class ForgotPassword extends AppCompatActivity {
             Log.i(Controller.TAG, "Json obj "+jsonObject);
 
             try {
-                /**
-                 * Check Whether Its NULL???
-                 */
+                 //Check Whether Its NULL???
+
                 if (jsonObject != null) {
 
                     result=jsonObject.getString("result");
-
 
                 }
             } catch (JSONException je) {
@@ -274,15 +280,16 @@ public class ForgotPassword extends AppCompatActivity {
             }
             return null;
         }
+
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             dialog.dismiss();
-            postData();
+            Log.d("result",result);
 
+            postData();
             GetUserDetails getUserDetails = new GetUserDetails(ForgotPassword.this,user,activity,name);
             getUserDetails.execute();
-
         }
     }
 }

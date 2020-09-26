@@ -21,6 +21,7 @@ import com.example.ddost.Database;
 import com.example.ddost.IntroduceFriend;
 import com.example.ddost.LoadWebView;
 import com.example.ddost.LoginPage;
+import com.example.ddost.MainActivity;
 import com.example.ddost.R;
 import com.example.ddost.SendQuery;
 import com.example.ddost.SharedPreferencesValue;
@@ -60,44 +61,52 @@ public class AccountFragment extends Fragment {
                     case 4:
                         intent= new Intent(getContext(), SendQuery.class);
                         startActivity(intent);
+                        getActivity().overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_left);
                         break;
                     case 2:
                         intent = new Intent(getContext(), IntroduceFriend.class);
                         startActivity(intent);
+                        getActivity().overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_left);
                         break;
                     case 0:
                         intent = new Intent(getContext(), UserInfo.class);
                         startActivity(intent);
+                        getActivity().overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_left);
                         break;
                     case 1:
                         intent = new Intent(getContext(),LoadWebView.class);
                         intent.putExtra("NAME",accountTablist[position]);
                         intent.putExtra("URL","https://dawaidost.com/faq-ext/");
                         startActivity(intent);
+                        getActivity().overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_left);
                         break;
                     case 3:
                         intent = new Intent(getContext(),LoadWebView.class);
                         intent.putExtra("NAME",accountTablist[position]);
                         intent.putExtra("URL","https://dawaidost.com/privacy-policy/");
                         startActivity(intent);
+                        getActivity().overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_left);
                         break;
                     case 5:
                         intent = new Intent(getContext(),LoadWebView.class);
                         intent.putExtra("NAME",accountTablist[position]);
                         intent.putExtra("URL","https://dawaidost.com/order-terms-and-conditions/");
                         startActivity(intent);
+                        getActivity().overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_left);
                         break;
                     case 6:
                         intent = new Intent(getContext(),LoadWebView.class);
                         intent.putExtra("NAME",accountTablist[position]);
                         intent.putExtra("URL","https://dawaidost.com/terms-and-conditions/");
                         startActivity(intent);
+                        getActivity().overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_left);
                         break;
                     case 7:
                         intent = new Intent(getContext(), LoadWebView.class);
                         intent.putExtra("NAME",accountTablist[position]);
                         intent.putExtra("URL","https://dawaidost.com/about-dawai-dost/");
                         startActivity(intent);
+                        getActivity().overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_left);
                         break;
                     case 8:
                         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -120,6 +129,7 @@ public class AccountFragment extends Fragment {
 
                                 Intent intent = new Intent(getContext(), LoginPage.class);
                                 startActivity(intent);
+                                getActivity().overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_right);
                                 getActivity().finish();
                             }
                         });

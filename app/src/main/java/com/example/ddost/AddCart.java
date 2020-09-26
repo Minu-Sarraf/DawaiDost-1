@@ -24,6 +24,7 @@ import com.jaredrummler.materialspinner.MaterialSpinner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class AddCart extends AppCompatActivity {
 
@@ -45,7 +46,7 @@ public class AddCart extends AppCompatActivity {
         setTitle("Add to Cart");
 
         //backbutton
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         //populating views
         tv1=findViewById(R.id.code);
@@ -100,8 +101,8 @@ public class AddCart extends AppCompatActivity {
         tv3.setText(brand);
         tv4.setText(generic);
         tv5.setText(company);
-        tv6.setText("Rs. "+String.valueOf(mrp));
-        tv7.setText("Rs. "+String.valueOf(price));
+        tv6.setText("Rs. "+String.format("%.02f",mrp));
+        tv7.setText("Rs. "+String.format("%.02f",price));
 
 
         //select number of order
@@ -176,8 +177,12 @@ public class AddCart extends AppCompatActivity {
                     Toast.makeText(AddCart.this,"Database Unavailable",Toast.LENGTH_LONG).show();
                 }
 
+                CartDeleteUpdate cartAdd = new CartDeleteUpdate(AddCart.this);
+                new CartDeleteUpdate.DeleteDataActivity(AddCart.this).execute();
+                cartAdd.sendData();
                 Intent intent = new Intent(AddCart.this, ShowCart.class);
                 startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_left);
                 finish();
             }
         });
@@ -185,12 +190,16 @@ public class AddCart extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()){
-            case android.R.id.home:
-                finish();
-
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
         }
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_right);
+    }
 }

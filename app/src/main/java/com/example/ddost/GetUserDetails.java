@@ -1,5 +1,6 @@
 package com.example.ddost;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
@@ -15,15 +16,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class GetUserDetails extends AsyncTask<Void, Void, Void> {
-    Context context;
-    ProgressDialog dialog;
-    final String url = "https://script.google.com/macros/s/AKfycbxOLElujQcy1-ZUer1KgEvK16gkTLUqYftApjNCM_IRTL3HSuDk/exec?id=1NRluNvYf9BeECtLVRZFnO1CENYm_4wmZWrjWHoEb8uc&sheet=ORDERSRECEIVED";
-    String mResponse;
-    String phoneNumber;
-    Activity activity;
-    String name;
+    @SuppressLint("StaticFieldLeak")
+    private Context context;
+    private ProgressDialog dialog;
+    private String mResponse;
+    private String phoneNumber;
+    @SuppressLint("StaticFieldLeak")
+    private Activity activity;
+    private String name;
 
-    public GetUserDetails(Context context, String phoneNumber, Activity activity, String name){
+    GetUserDetails(Context context, String phoneNumber, Activity activity, String name){
         this.context=context;
         this.phoneNumber=phoneNumber;
         this.activity= activity;
@@ -42,6 +44,7 @@ public class GetUserDetails extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... voids) {
         HttpRequest mRequest = new HttpRequest();
+        String url = "https://script.google.com/macros/s/AKfycbxOLElujQcy1-ZUer1KgEvK16gkTLUqYftApjNCM_IRTL3HSuDk/exec?id=1NRluNvYf9BeECtLVRZFnO1CENYm_4wmZWrjWHoEb8uc&sheet=Cart";
         mResponse=mRequest.sendGet(url);
         return null;
     }
@@ -49,35 +52,39 @@ public class GetUserDetails extends AsyncTask<Void, Void, Void> {
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        saveCart(mResponse);
         dialog.dismiss();
-        Intent intent = new Intent(context,MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        context.startActivity(intent);
-        activity.finish();
-        Toast.makeText(context,"Welcome "+name,Toast.LENGTH_LONG).show();
+        if(mResponse!=null){
+            saveCart(mResponse);
+            Intent intent = new Intent(context,MainActivity.class);
+            intent.putExtra("LOGIN","login");
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            context.startActivity(intent);
+            activity.finish();
+            activity.overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_right);
+            Toast.makeText(context,"Welcome "+name,Toast.LENGTH_LONG).show();
+        }else{
+            Toast.makeText(context,"Error Fetching Data",Toast.LENGTH_SHORT).show();
+        }
 
     }
 
-    public void saveCart(String mResponse){
+    private void saveCart(String mResponse){
         SQLiteOpenHelper helper = new Database(context);
         SQLiteDatabase db = helper.getReadableDatabase();
         JSONObject cartDetails = new JSONObject();
         try {
             JSONObject jsonObject = new JSONObject(mResponse);
-            JSONArray array = jsonObject.getJSONArray("ORDERSRECEIVED");
+            JSONArray array = jsonObject.getJSONArray("Cart");
             JSONObject response;
             int count = 0;
             while(count<array.length()){
                 response=array.getJSONObject(count);
-                String userNumber = response.getString("User_Number");
+                String userNumber = response.getString("UserNumber");
                 if(phoneNumber.equals(userNumber)){
                     cartDetails=response;
                 }
                 count++;
             }
-
-
             int number = 1;
 
             ContentValues contentValues = new ContentValues();

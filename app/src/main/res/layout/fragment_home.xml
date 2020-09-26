@@ -11,10 +11,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/searchView"
+        android:focusable="false"
         android:iconifiedByDefault="false"
         android:queryHint="Search Medicine"
         android:autofillHints="Search Medicine"
-        android:focusable="false"
         app:layout_constraintTop_toTopOf="parent" />
 
 
@@ -43,7 +43,8 @@
             android:id="@+id/samajhdar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@mipmap/samajhdar" />
+            android:src="@mipmap/samajhdar"
+            android:focusable="true"/>
 
         <TextView
             android:id="@+id/home_page2"
@@ -53,7 +54,8 @@
             android:text="Upto 85% Discount on Generic Medicines"
             android:textSize="18sp"
             android:textColor="@android:color/black"
-            android:textStyle="bold"/>
+            android:textStyle="bold"
+            android:focusable="true"/>
 
         <ImageView
             android:layout_width="match_parent"
@@ -65,7 +67,8 @@
             android:id="@+id/home_page"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@mipmap/home_page"/>
+            android:src="@mipmap/home_page"
+            android:focusable="true"/>
 
     </LinearLayout>
 
@@ -89,15 +92,25 @@
             android:textColor="@android:color/black"
             android:autoLink="web" />
 
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:text="Helpline Number: 7677807777"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black"
-            android:layout_marginBottom="10dp"/>
+            android:orientation="horizontal"
+            android:layout_gravity="center_horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Helpline Number: 7677807777"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:layout_marginBottom="10dp"/>
+
+
+        </LinearLayout>
+
 
     </LinearLayout>
 

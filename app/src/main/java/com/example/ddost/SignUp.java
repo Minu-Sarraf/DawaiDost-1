@@ -30,7 +30,6 @@ import java.util.ArrayList;
 public class SignUp extends AppCompatActivity {
     EditText userPhone, userName, userAge, userAddress, userPin, userEmail, userPassword,userAnswer;
     String uPhone, uName, uAge, uAddress, uPin, uEmail,uPassword,uAnswer, uQuestion;
-    Thread t;
     String id;
     ArrayList<String> security = new ArrayList<>();
 
@@ -100,25 +99,27 @@ public class SignUp extends AppCompatActivity {
     public void validateData(){
         SharedPreferencesValue sharedPreferencesValue = new SharedPreferencesValue(SignUp.this);
         sharedPreferencesValue.setSharedPreferences();
-        if(uPhone.length()!=10) {
+        if(uPhone.trim().length()!=10) {
             userPhone.setError("Please Enter a valid Phone Number!");
-        }else if (uName.length()==0){
-            userName.setError("This field cannot be empty");
-        }else if(userAge.length()<2) {
-            userAge.setError("Cannot accept order from age under 20");
-        }else if(uEmail.length()==0 || !sharedPreferencesValue.isValidEmail(uEmail)){
+        }else if (uName.trim().length()<2){
+            userName.setError("Please enter your full name!");
+        }else if(uAge.trim().length()==0){
+            userAge.setError("Please enter your age!");
+        }else if(Integer.parseInt(uAge)<18) {
+            userAge.setError("Cannot accept order from age under 18");
+        }else if(uEmail.length()==0 || !sharedPreferencesValue.isValidEmail(uEmail.trim())){
             userEmail.setError("Please enter a valid Email Address!");
-        }else if(uAddress.length()==0 ) {
-            userAddress.setError("This field cannot be empty");
-        }else if(uPin.length()!=6){
+        }else if(uAddress.trim().length()<2 ) {
+            userAddress.setError("Please enter a valid address!");
+        }else if(uPin.trim().length()!=6){
             userPin.setError("Please enter a valid pin number!");
         }else if(uPassword.length()<8){
             userPassword.setError("Password should consist at least 8 characters");
-        }else if(uAnswer.length()==0){
-            userAnswer.setError("Please enter a valid answer.");
+        }else if(uAnswer.trim().length()<2){
+            userAnswer.setError("Please enter a valid text!");
         }else{
 
-            sharedPreferencesValue.setValues(uPhone,uName,uAge,uAddress,uPin,uEmail,uPassword,uQuestion,uAnswer);
+            sharedPreferencesValue.setValues(uPhone.trim(),uName.trim(),uAge.trim(),uAddress.trim(),uPin.trim(),uEmail.trim(),uPassword,uQuestion,uAnswer.trim());
 
             id=uPhone;
             new DeleteDataActivity().execute();
@@ -145,19 +146,22 @@ public class SignUp extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()){
-            case android.R.id.home:
-                finish();
-
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_right);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_right);
     }
 
     class DeleteDataActivity extends AsyncTask<Void, Void, Void> {
 
         ProgressDialog dialog;
-        int jIndex;
-        int x;
         String result=null;
 
         @Override
@@ -197,12 +201,15 @@ public class SignUp extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             dialog.dismiss();
+
             postData();
             Intent intent = new Intent(SignUp.this,MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             Toast.makeText(SignUp.this,"Welcome "+uName,Toast.LENGTH_SHORT).show();
             finish();
+            overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_right);
+
         }
     }
 }

@@ -62,17 +62,7 @@ public class BranchFragment extends Fragment {
         helper =  new Database(getContext());
         db=helper.getReadableDatabase();
 
-        //loadDatabase();
-
         String url = "https://script.google.com/macros/s/AKfycbxOLElujQcy1-ZUer1KgEvK16gkTLUqYftApjNCM_IRTL3HSuDk/exec?id=1XcU1TbA56-JNM0Qsj9ihyt3mgzFGVWeHFFIUn-7_4wM&sheet=BRANCHES";
-
-/*        if(!syncedBranches){
-            GetData getData = new GetData(getContext(),getActivity(),url,"Branches");
-            getData.showProgressBar();
-            getData.execute("Branches");
-            syncedBranches=!syncedBranches;
-        }
-        loadDatabase();*/
 
         GetBranches getBranches = new GetBranches();
         getData = new GetData(getContext(),getActivity(),url,"Branches");

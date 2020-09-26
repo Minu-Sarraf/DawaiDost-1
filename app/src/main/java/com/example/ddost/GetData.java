@@ -1,10 +1,14 @@
 package com.example.ddost;
 
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
@@ -34,14 +38,17 @@ import org.json.JSONObject;
 
 public class GetData extends AsyncTask<String, Integer, JSONObject> {
     private JSONObject finalResponse = new JSONObject();
-    Context context;
-    ProgressBar dawaiLoadingDialog;
-    Activity activity;
+    @SuppressLint("StaticFieldLeak")
+    private Context context;
+    @SuppressLint("StaticFieldLeak")
+    private ProgressBar dawaiLoadingDialog;
+    @SuppressLint("StaticFieldLeak")
+    private Activity activity;
 
-    SQLiteOpenHelper helper;
-    SQLiteDatabase db;
-    String url;
-    String dataType;
+    private SQLiteOpenHelper helper;
+    private SQLiteDatabase db;
+    private String url;
+    private String dataType;
 
     public GetData(Context context, Activity activity, String url, String dataType){
         this.context = context;
@@ -62,8 +69,6 @@ public class GetData extends AsyncTask<String, Integer, JSONObject> {
                 {
                     @Override
                     public void onResponse(JSONObject response) {
-                        //JSONArray arr = response.getJSONArray("Med");
-                        //Log.d("response", String.valueOf(arr));
 
                         //progressbar for syncing dawai
                         activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
@@ -71,6 +76,10 @@ public class GetData extends AsyncTask<String, Integer, JSONObject> {
 
                         helper= new Database(context);
                         db=helper.getReadableDatabase();
+
+                        Cursor cursor = db.query("CART",
+                                new String[]{"CODE"},
+                                null,null,null,null,null);
 
 
                         switch (dataType){
@@ -82,7 +91,34 @@ public class GetData extends AsyncTask<String, Integer, JSONObject> {
                                 db.delete("BRANCHES",null,null);
                                 saveBranches(response);
                                 break;
+                            case "login":
+                                db.delete("DAWAI",null,null);
+                                saveMedicine(response);
+                                if(cursor.moveToFirst()){
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                                    builder.setTitle("Check cart!");
+                                    builder.setMessage("You have items on cart!");
+                                    builder.setPositiveButton("View Cart", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                            Intent intent = new Intent(context,ShowCart.class);
+                                            context.startActivity(intent);
+                                        }
+                                    });
+                                    builder.setNegativeButton("Clear Cart", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                            db.delete("CART",null,null);
+                                            new CartDeleteUpdate.DeleteDataActivity(context).execute();
+                                            Toast.makeText(context,"Cart Cleared",Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                    builder.create().show();
+                                }
                         }
+                        cursor.close();
                         finalResponse= response;
 
                     }
@@ -123,7 +159,7 @@ public class GetData extends AsyncTask<String, Integer, JSONObject> {
         dawaiLoadingDialog.setVisibility(View.GONE);
     }
 
-    public void saveMedicine(JSONObject mResponse){
+    private void saveMedicine(JSONObject mResponse){
         //saving data from google sheet into database
         try {
             JSONArray array = mResponse.getJSONArray("Med");
@@ -173,9 +209,10 @@ public class GetData extends AsyncTask<String, Integer, JSONObject> {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
     }
 
-    public void saveBranches(JSONObject response){
+    private void saveBranches(JSONObject response){
         try {
             JSONArray array = response.getJSONArray("BRANCHES");
             int totalData = array.length()-1;

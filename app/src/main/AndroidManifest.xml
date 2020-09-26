@@ -2,13 +2,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.ddost">
 
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/dawai_dost_logo"
+        android:icon="@mipmap/laucher_icon"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/dawai_dost_logo"
+        android:roundIcon="@mipmap/laucher_icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity android:name=".ForgotPassword" android:screenOrientation="portrait"/>
         <activity android:name=".NoConnection" android:screenOrientation="portrait"/>
         <activity android:name=".SendQuery" android:screenOrientation="portrait"/>
@@ -23,23 +30,32 @@
             android:name=".SignUp"
             android:windowSoftInputMode="stateAlwaysHidden"
             android:screenOrientation="portrait"/>
+
         <activity android:name=".LoginPage" android:screenOrientation="portrait"/>
+
         <activity
             android:name=".ConfirmOrder"
             android:theme="@style/Theme.AppCompat.Light.Dialog"
             android:screenOrientation="portrait"/>
+
         <activity
             android:name=".UpdateDetails"
             android:theme="@style/Theme.AppCompat.Light.Dialog"
             android:screenOrientation="portrait"/>
+
         <activity android:name=".LoadWebView" android:screenOrientation="portrait"/>
+
         <activity android:name=".IntroduceFriend" android:screenOrientation="portrait"/>
+
         <activity android:name=".UserInfo" android:screenOrientation="portrait"/>
+
         <activity
             android:name=".ShowCart"
             android:windowSoftInputMode="adjustPan"
             android:screenOrientation="portrait"/>
+
         <activity android:name=".AddCart" android:screenOrientation="portrait"/>
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
@@ -56,11 +72,6 @@
                 android:resource="@xml/provider_paths" />
         </provider>
     </application>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.INTERNET" />
 
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
 </manifest>

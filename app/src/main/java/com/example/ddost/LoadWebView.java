@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.webkit.WebView;
 
+import java.util.Objects;
+
 public class LoadWebView extends AppCompatActivity{
     String url;
 
@@ -17,7 +19,7 @@ public class LoadWebView extends AppCompatActivity{
         setContentView(R.layout.load_web_view);
 
         //backbutton
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        (getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         Intent intent = getIntent();
         url = intent.getStringExtra("URL");
@@ -32,9 +34,17 @@ public class LoadWebView extends AppCompatActivity{
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()){
             case android.R.id.home:
+
                 finish();
+                overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_right);
 
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_right);
     }
 }

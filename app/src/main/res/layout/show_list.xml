@@ -72,7 +72,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_marginTop="@dimen/recycler_horizontal_padding"
                     android:paddingLeft="@dimen/textPadding"
                     android:paddingRight="@dimen/textPadding"
                     android:id="@+id/textNeedPrescription"
@@ -83,12 +82,10 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="10dp"
+                    android:layout_gravity="center_horizontal"
                     android:id="@+id/textQuantity"
                     android:textSize="12sp"
-                    android:textColor="@color/dark"
-                    android:layout_marginBottom="@dimen/recycler_horizontal_padding"/>
+                    android:textColor="@color/dark"/>
 
             </LinearLayout>
 

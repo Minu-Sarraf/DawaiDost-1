@@ -88,14 +88,14 @@ public class SearchMedicine {
             ArrayList<Float> price = new ArrayList<>();
 
             boolean cursorValue = cursor.moveToFirst();
-            String c,t,b,g;
+            String c,b,g;
             while(cursorValue){
                 c=cursor.getString(0);
                 b=cursor.getString(1);
                 g=cursor.getString(2);
 
                 String sText=mText.toUpperCase(Locale.ENGLISH);
-                if (c.contains(sText) || b.contains(sText) || g.contains(sText)){
+                if (c.toUpperCase(Locale.ENGLISH).contains(sText) || g.toUpperCase(Locale.ENGLISH).contains(sText) || b.toUpperCase(Locale.ENGLISH).contains(sText)){
                     code.add(cursor.getString(0));
                     brand.add(cursor.getString(1));
                     generic.add(cursor.getString(2));

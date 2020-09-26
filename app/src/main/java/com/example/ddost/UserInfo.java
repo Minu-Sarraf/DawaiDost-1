@@ -24,6 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URLEncoder;
+import java.util.Objects;
 
 public class UserInfo extends AppCompatActivity {
     EditText userPhone, userName, userAge, userAddress, userPin, userEmail;
@@ -39,7 +40,7 @@ public class UserInfo extends AppCompatActivity {
         setTitle("Edit Information");
 
         //backbutton
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         pValue = new SharedPreferencesValue(UserInfo.this);
         pValue.setSharedPreferences();
@@ -87,28 +88,30 @@ public class UserInfo extends AppCompatActivity {
     }
 
     public void validateData(){
-        Log.d("validEmail", String.valueOf(pValue.isValidEmail(uEmail)));
-        if(uPhone.length()!=10) {
+        if(uPhone.trim().length()!=10) {
             userPhone.setError("Please Enter a valid Phone Number!");
-        }else if (uName.length()==0){
-            userName.setError("This field cannot be empty");
-        }else if(userAge.length()<2) {
-            userAge.setError("Cannot accept order from age under 20");
-        }else if(uEmail.length()==0 || !pValue.isValidEmail(uEmail)){
+        }else if ((uName.trim()).length()<2){
+            userName.setError("Please enter your full name");
+        }else if(uAge.trim().length()==0){
+            userAge.setError("Please enter your age!");
+        }else if(Integer.parseInt(uAge)<18) {
+            userAge.setError("Cannot accept order from age under 18");
+        }else if(uEmail.trim().length()==0 || !pValue.isValidEmail(uEmail)){
             userEmail.setError("Please enter a valid Email Address!");
-        }else if(uAddress.length()==0) {
-            userAddress.setError("This field cannot be empty");
-        }else if(uPin.length()!=6){
+        }else if(uAddress.trim().length()<2) {
+            userAddress.setError("Please enter a valid address");
+        }else if(uPin.trim().length()!=6){
             userPin.setError("Please enter a valid pin number!");
-        }else{
-            uPassword=pValue.getPassword();
-            if(uPhone!=pValue.getPhone() || uName!=pValue.getName() || uAge!=pValue.getAge() || uEmail!=pValue.getEmail() || uAddress!=pValue.getAddress() || uPin!=pValue.getPincode()){
+        }else if(!uPhone.equals(pValue.getPhone()) || !uName.equals(pValue.getName()) || !uAge.equals(pValue.getAge()) || !uEmail.equals(pValue.getEmail()) || !uAddress.equals(pValue.getAddress()) || !uPin.equals(pValue.getPincode())){
                 id=uPhone;
                 new DeleteDataActivity().execute();
 
+                pValue.setValues(uPhone,uName,uAge,uAddress,uPin,uEmail,pValue.getPassword(),pValue.getQuestion(),pValue.getAnswer());
 
-                pValue.setValues(uPhone,uName,uAge,uAddress,uPin,uEmail,uPassword,pValue.getQuestion(),pValue.getAnswer());
-            }
+        }else{
+
+            finish();
+            overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_right);
         }
     }
 
@@ -122,7 +125,7 @@ public class UserInfo extends AppCompatActivity {
                 "entry_957026713="+ URLEncoder.encode(uAddress)+"&"+
                 "entry_447845151="+ URLEncoder.encode(uPin)+"&"+
                 "entry_733184386="+ URLEncoder.encode(uEmail)+"&"+
-                "entry_2069835835="+ URLEncoder.encode(encrypt.encryptThisString(uPassword))+"&"+
+                "entry_2069835835="+ URLEncoder.encode(encrypt.encryptThisString(pValue.getPassword()))+"&"+
                 "entry_2101863006="+ URLEncoder.encode(pValue.getQuestion())+"&"+
                 "entry_24963331="+ URLEncoder.encode(pValue.getAnswer());
         SendSheet sendSheet = new SendSheet(getApplicationContext(),url,data);
@@ -134,16 +137,21 @@ public class UserInfo extends AppCompatActivity {
         switch (item.getItemId()){
             case android.R.id.home:
                 finish();
+                overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_right);
 
         }
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_right);
+    }
+
     class DeleteDataActivity extends AsyncTask<Void, Void, Void> {
 
         ProgressDialog dialog;
-        int jIndex;
-        int x;
         String result=null;
 
         @Override
@@ -165,9 +173,7 @@ public class UserInfo extends AppCompatActivity {
             Log.i(Controller.TAG, "Json obj "+jsonObject);
 
             try {
-                /**
-                 * Check Whether Its NULL???
-                 */
+
                 if (jsonObject != null) {
 
                     result=jsonObject.getString("result");
@@ -186,7 +192,7 @@ public class UserInfo extends AppCompatActivity {
             Toast.makeText(getApplicationContext(),"Saved", Toast.LENGTH_LONG).show();
             postData();
             finish();
-
+            overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_right);
         }
     }
 }

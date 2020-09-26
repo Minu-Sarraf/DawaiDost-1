@@ -13,12 +13,12 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
-public class Controller {
+public class ControllerCart {
     public static final String TAG = "TAG";
 
-    public static final String WAURL="https://script.google.com/macros/s/AKfycbympuU1A4Txx5B7YPBmTfQ5J1zQxdZ13x3OL0DOepRk9F9LTQui/exec?";
+    public static final String WAURL="https://script.google.com/macros/s/AKfycbz9gHp10siw2sbq2fCgmqK6EUGhrerWu6pwL0fq-1x4VVF3xM8/exec?";
     // EG : https://script.google.com/macros/s/AKfycbwXXXXXXXXXXXXXXXXX/exec?
-    //Make Sure '?' Mark is present at the end of URL
+//Make Sure '?' Mark is present at the end of URL
 
     private static Response response;
 
@@ -95,16 +95,13 @@ public class Controller {
                     .url(WAURL+"action=delete&id="+id)
                     .build();
             response = client.newCall(request).execute();
-            // Log.e(TAG,"response from gs"+response.body().string());
+            //Log.e(TAG,"response from gs"+response.body().string());
             return new JSONObject(response.body().string());
-
 
         } catch (@NonNull IOException | JSONException e) {
             Log.e(TAG, "recieving null " + e.getLocalizedMessage());
         }
-
         return null;
     }
 
 }
-

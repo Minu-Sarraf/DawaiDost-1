@@ -1,5 +1,6 @@
 package com.example.ddost;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -65,11 +66,28 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.MyViewHolder> 
                     public void onClick(DialogInterface dialog, int which) {
                         db.delete("CART", "CODE=?", new String[]{cd});
                         dialog.dismiss();
-                        Intent intent1 = new Intent(context, ShowCart.class);
-                        intent1.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        intent1.putExtra("DELETED","DELETED");
-                        context.startActivity(intent1);
+
+                        CartDeleteUpdate cartAdd = new CartDeleteUpdate(context);
+                        new CartDeleteUpdate.DeleteDataActivity(context).execute();
+                        cartAdd.sendData();
+
+                        Intent intent = new Intent(context,ShowCart.class);
+                        context.startActivity(intent);
+                        Activity activity = (Activity) context;
+                        activity.overridePendingTransition(R.anim.fade_in,R.anim.fade_out);
+
+                        code.remove(position);
+                        brand.remove(position);
+                        generic.remove(position);
+                        packing.remove(position);
+                        price.remove(position);
+                        mrp.remove(position);
+                        quantity.remove(position);
+                        prescription.remove(position);
+                        notifyDataSetChanged();
+
                         Toast.makeText(context, " DELETED", Toast.LENGTH_SHORT).show();
+
                     }
                 });
 
@@ -104,7 +122,6 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.MyViewHolder> 
     @Override
     public CartAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.show_list, parent, false);
-
         return new CartAdapter.MyViewHolder(itemView);
     }
 
@@ -124,7 +141,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.MyViewHolder> 
         Float sv = ((mrp.get(position)-price.get(position))/mrp.get(position))*100;
         int saving = Math.round(sv);
         holder.textPackingBrand.setText(pk+" | "+bd);
-        holder.textMrpPrice.setText("MRP Rs: "+mp+" | "+"DD Price Rs: "+prc);
+        holder.textMrpPrice.setText("MRP Rs: "+String.format("%.02f",mp)+" | "+"DD Price Rs: "+String.format("%.02f",prc));
         holder.textQuantity.setText(order+" Pcs");
         holder.textSaving.setText("Saving: "+saving+"%");
 

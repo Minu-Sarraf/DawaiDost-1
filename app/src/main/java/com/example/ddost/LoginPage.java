@@ -34,7 +34,6 @@ public class LoginPage extends AppCompatActivity {
     String userPhone, userPassword;
     ProgressBar loading;
     String mResponse;
-    Thread thread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,17 +65,6 @@ public class LoginPage extends AppCompatActivity {
         });
 
 
-        final String url = "https://script.google.com/macros/s/AKfycbxOLElujQcy1-ZUer1KgEvK16gkTLUqYftApjNCM_IRTL3HSuDk/exec?id=1NRluNvYf9BeECtLVRZFnO1CENYm_4wmZWrjWHoEb8uc&sheet=Customers";
-        //getData = new GetData(LoginPage.this,this,url,"Login");
-
-        thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                HttpRequest request = new HttpRequest();
-                mResponse=request.sendGet(url);
-            }
-        });
-
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -94,8 +82,8 @@ public class LoginPage extends AppCompatActivity {
                 userPhone= phoneNumber.getText().toString();
                 userPassword=password.getText().toString();
 
-                if(userPhone.length()==0){
-                    phoneNumber.setError("Please enter your number!");
+                if(userPhone.trim().length()!=10){
+                    phoneNumber.setError("Please enter a valid number!");
                 }else if(userPassword.length()==0){
                     password.setError("Please enter your password!");
                 }else{
@@ -111,6 +99,7 @@ public class LoginPage extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(LoginPage.this,SignUp.class);
                 startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_right);
             }
         });
 
@@ -120,12 +109,12 @@ public class LoginPage extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(LoginPage.this,ForgotPassword.class);
                 startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_right);
             }
         });
     }
 
     public void checkPassword(){
-
         try {
             JSONObject jsonObject = new JSONObject(mResponse);
             JSONArray jsonArray = jsonObject.getJSONArray("Customers");
@@ -150,7 +139,7 @@ public class LoginPage extends AppCompatActivity {
                         String answer = String.valueOf(finalObject.get("Answer"));
                         SharedPreferencesValue sharedPreferencesValue = new SharedPreferencesValue(getApplicationContext());
                         sharedPreferencesValue.setSharedPreferences();
-                        sharedPreferencesValue.setValues(user,name,age,address,pin,email,password,question,answer);
+                        sharedPreferencesValue.setValues(user,name,age,address,pin,email,userPassword,question,answer);
 
                         GetUserDetails getUserDetails = new GetUserDetails(LoginPage.this,userPhone,this, name);
                         getUserDetails.execute();
@@ -218,7 +207,11 @@ public class LoginPage extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             dialog.dismiss();
-            checkPassword();
+            if(mResponse!=null){
+                checkPassword();
+            }else{
+                Toast.makeText(LoginPage.this,"Could not fetch data!",Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

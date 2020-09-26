@@ -20,6 +20,8 @@ public class SharedPreferencesValue {
     private static final String Question ="questionKey";
     private static final String Answer ="answerKey";
     private static final String Link ="linkKey";
+    private static final String Query ="queryKey";
+    private static final String PrescriptionCount ="prescriptionCountKey";
     private Context context;
 
     public SharedPreferencesValue(Context context){
@@ -84,9 +86,19 @@ public class SharedPreferencesValue {
         return sharedPreferences.getString(Link," ");
     }
 
+    public String getQuery(){return sharedPreferences.getString(Query," ");}
+
+    public Integer getPrescriptionCount(){return sharedPreferences.getInt(PrescriptionCount,0);}
+
     public void setPrescription(Boolean prescription){
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(Prescription,prescription);
+        editor.apply();
+    }
+
+    public void setPrescriptionCount(Integer count){
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(PrescriptionCount,count);
         editor.apply();
     }
 
@@ -96,14 +108,9 @@ public class SharedPreferencesValue {
         editor.apply();
     }
 
-    public void setValues(String phone, String name, String age, String address, String pincode, String email) {
+    public void setQuery(String query){
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(Phone,phone);
-        editor.putString(Name,name);
-        editor.putString(Age,age);
-        editor.putString(Address,address);
-        editor.putString(Pincode,pincode);
-        editor.putString(Email,email);
+        editor.putString(Query,query);
         editor.apply();
     }
 

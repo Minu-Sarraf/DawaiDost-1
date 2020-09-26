@@ -25,7 +25,7 @@
     <string name="userPhone">Phone Number</string>
     <string name="userAge">Age</string>
     <string name="userEmail">Email Id</string>
-    <string name="userAddress">Address</string>
+    <string name="userAddress">Delivery Address</string>
     <string name="userPin">Pin Code</string>
 
     <string name="action_sign_in">Sign in</string>

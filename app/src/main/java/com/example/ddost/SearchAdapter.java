@@ -1,5 +1,6 @@
 package com.example.ddost;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -25,7 +26,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.MyViewHold
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
-        public TextView textGeneric, textBrand, textPackingCompany, textMrpPrice, textNeedPrescription, textQuantity, textCartPrice;
+        public TextView textGeneric, textBrand, textPackingCompany, textMrpPrice, textNeedPrescription, textQuantity, textCartPrice,textSaving;
         public ImageView imageView;
         public LinearLayout linearLayout;
 
@@ -40,6 +41,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.MyViewHold
             textNeedPrescription = (TextView) itemView.findViewById(R.id.textNeedPrescription);
             textQuantity= (TextView) itemView.findViewById(R.id.textQuantity);
             textCartPrice = (TextView) itemView.findViewById(R.id.textCartPrice);
+            textSaving = (TextView) itemView.findViewById(R.id.textSaving);
 
             imageView = (ImageView) itemView.findViewById(R.id.image);
             linearLayout.setOnClickListener(this);
@@ -58,7 +60,9 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.MyViewHold
                     intent.putExtra("Type", packing.get(position));
                     intent.putExtra("Brand",brand.get(position));
                     intent.putExtra("Generic",generic.get(position));
-                    context.startActivity(intent);
+                    Activity activity = (Activity) context;
+                    activity.startActivity(intent);
+                    activity.overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_right);
                     break;
             }
         }
@@ -100,11 +104,13 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.MyViewHold
         Float pr = (price.get(position));
         Float sv = saving.get(position)*100;
         int saving = Math.round(sv);
+
         //change to different column
         holder.textGeneric.setText(cd+ ": "+gn);
         holder.textBrand.setText("Brand: "+bd);
         holder.textPackingCompany.setText("Packing: "+pk+" | Company: "+cp);
-        holder.textMrpPrice.setText("MRP: "+String.format("%.02f",mp)+" | DD Price: "+String.format("%.02f",pr)+" | Saving "+saving+"%");
+        holder.textSaving.setText("Saving: "+saving+"%");
+        holder.textMrpPrice.setText("MRP: "+String.format("%.02f",mp)+" | DD Price: "+String.format("%.02f",pr));
 
         //add to cart image
         holder.imageView.setImageResource(R.mipmap.add_cart);

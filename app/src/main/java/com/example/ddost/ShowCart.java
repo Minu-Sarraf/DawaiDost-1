@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActivityOptions;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -65,6 +66,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 public class ShowCart extends AppCompatActivity {
@@ -108,8 +110,10 @@ public class ShowCart extends AppCompatActivity {
 
         db= helper.getReadableDatabase();
 
+        setTitle("My Cart");
+
         //getting images
-        getImage=new GetImage(ShowCart.this,"CART");
+        getImage=new GetImage(ShowCart.this,this,"CART");
 
         //showing items in cart
         helper=new Database(getApplicationContext());
@@ -139,9 +143,12 @@ public class ShowCart extends AppCompatActivity {
             cursorValue=images.moveToNext();
         }
 
-        Picasso.get().load(image.get(0))
+        Picasso
+                .get()
+                .load(image.get(0))
                 .fit()
                 .into(imageView);
+
         images.close();
 
         sharedPreferencesValue=new SharedPreferencesValue(getApplicationContext());
@@ -382,9 +389,11 @@ public class ShowCart extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         db.delete("CART",null,null);
                         Toast.makeText(ShowCart.this,"Cart Cleared",Toast.LENGTH_SHORT).show();
+                        new CartDeleteUpdate.DeleteDataActivity(ShowCart.this).execute();
                         Intent intent = new Intent(ShowCart.this,ShowCart.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
+                        overridePendingTransition(R.anim.fade_in,R.anim.fade_out);
                         dialog.dismiss();
                     }
                 });
@@ -441,6 +450,7 @@ public class ShowCart extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         Bitmap rbitmap;
         String userImage;
+        Log.d("prescription",requestCode+" "+resultCode);
         if(resultCode!=RESULT_CANCELED){
             if(requestCode==1) {
                 if (data.getExtras() == null && data.getData() == null) {
@@ -476,6 +486,7 @@ public class ShowCart extends AppCompatActivity {
         Intent intent = new Intent(ShowCart.this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+        overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_right);
         finish();
     }
 
@@ -548,4 +559,5 @@ public class ShowCart extends AppCompatActivity {
         }
 
     }
+
 }

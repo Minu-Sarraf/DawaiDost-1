@@ -52,9 +52,12 @@ public class GetImage {
     Context context;
     boolean imageResponse=false;
     String from;
+    Activity activity;
 
-    public GetImage (Context context,String from){
-        this.context =context;
+
+    public GetImage(Context context, Activity activity, String from){
+        this.context=context;
+        this.activity=activity;
         this.from = from;
     }
 
@@ -145,11 +148,12 @@ public class GetImage {
         bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] imageBytes = baos.toByteArray();
         String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
-
         return encodedImage;
     }
 
+
     public void uploadPhoto(final String userImage){
+
         final SharedPreferencesValue sharedPreferencesValue = new SharedPreferencesValue(context);
         sharedPreferencesValue.setSharedPreferences();
 
@@ -162,12 +166,17 @@ public class GetImage {
                     public void onResponse(String response) {
                         imageResponse=true;
                         loading.dismiss();
-                        Toast.makeText(context,"Prescription Uploaded Successfully",Toast.LENGTH_LONG).show();
+
+                        Toast.makeText(context,"Prescription Uploaded Successfully",Toast.LENGTH_SHORT).show();
                         SharedPreferencesValue sharedPreferencesValue = new SharedPreferencesValue(context);
                         sharedPreferencesValue.setSharedPreferences();
                         sharedPreferencesValue.setPrescription(true);
+                        int count = sharedPreferencesValue.getPrescriptionCount();
+                        count=count+1;
+                        sharedPreferencesValue.setPrescriptionCount(count);
                         if(from.equals("CART")){
                             Intent intent = new Intent (context,UpdateDetails.class);
+                            Log.d("prescription","prescription");
                             context.startActivity(intent);
                         }
                     }
@@ -176,16 +185,17 @@ public class GetImage {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         loading.dismiss();
+
                         if (error instanceof TimeoutError || error instanceof NoConnectionError) {
-                            Toast.makeText(context, "Timeout, check your internet connection", Toast.LENGTH_LONG).show();
+                            Toast.makeText(context, "Check your internet connection", Toast.LENGTH_SHORT).show();
                         } else if (error instanceof AuthFailureError) {
-                            Toast.makeText(context, "Error", Toast.LENGTH_LONG).show();
+                            Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
                         } else if (error instanceof ServerError) {
-                            Toast.makeText(context, "Error uploading", Toast.LENGTH_LONG).show();
+                            Toast.makeText(context, "Error uploading", Toast.LENGTH_SHORT).show();
                         } else if (error instanceof NetworkError) {
-                            Toast.makeText(context, "Error image", Toast.LENGTH_LONG).show();
+                            Toast.makeText(context, "Error image", Toast.LENGTH_SHORT).show();
                         } else if (error instanceof ParseError) {
-                            Toast.makeText(context, "Error uploading image", Toast.LENGTH_LONG).show();
+                            Toast.makeText(context, "Error uploading image", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }){
@@ -213,6 +223,7 @@ public class GetImage {
         RequestQueue requestQueue = Volley.newRequestQueue(context);
 
         requestQueue.add(stringRequest);
+
     }
 
     public boolean getResponse(){

@@ -19,22 +19,22 @@
 
         <TextView
             android:id="@+id/textEmail"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
             android:textColor="@color/dark"
-            android:textSize="18sp"
+            android:textSize="16sp"
             android:text="Further Details on: "
             android:textStyle="bold"
             android:layout_weight="1"/>
 
         <TextView
             android:id="@+id/textSite"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
             android:textColor="@color/dark"
-            android:textSize="18sp"
+            android:textSize="16sp"
             android:text="www.DawaiDost.com"
             android:autoLink="web"
             android:textStyle="bold"
@@ -53,22 +53,22 @@
         app:layout_constraintTop_toBottomOf="@id/webSite">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
             android:layout_weight="1"
             android:text="Helpline Number: "
             android:textColor="@color/dark"
-            android:textSize="18sp"
+            android:textSize="16sp"
             android:textStyle="bold" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
             android:textColor="@color/dark"
             android:gravity="start"
-            android:textSize="18sp"
+            android:textSize="16sp"
             android:autoLink="phone"
             android:text="7677807777"
             android:textStyle="bold"

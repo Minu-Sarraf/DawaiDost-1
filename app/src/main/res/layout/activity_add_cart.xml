@@ -20,21 +20,22 @@
         android:layout_marginTop="@dimen/margin_top">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="CODE : "
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
+            android:layout_weight="2"
             />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/code"
             android:textSize="@dimen/text_size"
             android:paddingLeft="@dimen/activity_horizontal_margin"
-
             android:textColor="@color/dark"
+            android:layout_weight="1"
             />
 
     </LinearLayout>
@@ -46,20 +47,21 @@
         android:layout_marginTop="@dimen/margin_top">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="PACKING : "
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
+            android:layout_weight="2"
             />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/type"
             android:textSize="@dimen/text_size"
             android:paddingLeft="@dimen/activity_horizontal_margin"
-
+            android:layout_weight="1 "
             android:textColor="@color/dark" />
 
     </LinearLayout>
@@ -71,21 +73,23 @@
         android:layout_marginTop="@dimen/margin_top">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="BRAND : "
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
+            android:layout_weight="2"
             />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/brand"
             android:paddingLeft="@dimen/activity_horizontal_margin"
 
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
+            android:layout_weight="1"
             />
 
     </LinearLayout>
@@ -97,20 +101,22 @@
         android:layout_marginTop="@dimen/margin_top">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="GENERIC : "
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
+            android:layout_weight="2"
             />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/generic"
             android:textSize="@dimen/text_size"
             android:paddingLeft="@dimen/activity_horizontal_margin"
             android:textColor="@color/dark"
+            android:layout_weight="1"
             />
 
     </LinearLayout>
@@ -122,20 +128,22 @@
         android:layout_marginTop="@dimen/margin_top">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="COMPANY : "
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
+            android:layout_weight="2"
             />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:paddingLeft="@dimen/activity_horizontal_margin"
             android:layout_height="wrap_content"
             android:id="@+id/company"
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
+            android:layout_weight="1"
             />
 
     </LinearLayout>
@@ -147,21 +155,23 @@
         android:layout_marginTop="@dimen/margin_top">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="MRP: "
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
+            android:layout_weight="2"
             />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/mrp"
             android:paddingLeft="@dimen/activity_horizontal_margin"
 
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
+            android:layout_weight="1"
             />
 
     </LinearLayout>
@@ -173,21 +183,23 @@
         android:layout_marginTop="@dimen/margin_top">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="DD Price: "
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
+            android:layout_weight="2"
             />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/price"
             android:paddingLeft="@dimen/activity_horizontal_margin"
 
             android:textSize="@dimen/text_size"
-            android:textColor="@color/dark" />
+            android:textColor="@color/dark"
+            android:layout_weight="1" />
 
     </LinearLayout>
 
@@ -198,19 +210,24 @@
         android:layout_marginTop="@dimen/margin_top">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="NUMBER OF ORDER : "
+            android:text="QUANTITY : "
+            android:gravity="center_vertical"
             android:textSize="@dimen/text_size"
             android:textColor="@color/dark"
+            android:layout_weight="2"
             />
 
         <com.jaredrummler.materialspinner.MaterialSpinner
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
             android:id="@+id/spinner"
             android:paddingLeft="@dimen/activity_horizontal_margin"
             android:textColor="@color/dark"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:ms_background_color="@color/bottomMenu"
+            android:layout_weight="1"/>
 
     </LinearLayout>
 
@@ -222,6 +239,7 @@
         android:layout_gravity="bottom|center_horizontal"
         android:layout_margin="@dimen/activity_vertical_margin"
         android:src="@mipmap/add_cart"
-        android:tint="@android:color/white"/>
+        android:tint="@android:color/white"
+        />
 
 </LinearLayout>

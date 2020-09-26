@@ -54,7 +54,9 @@ public class SendQuery extends AppCompatActivity {
                 }else{
                     sendData();
                     Toast.makeText(SendQuery.this,"Query Sent",Toast.LENGTH_SHORT).show();
+
                     finish();
+                    overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_right);
                 }
             }
         });
@@ -77,9 +79,18 @@ public class SendQuery extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()){
             case android.R.id.home:
+
                 finish();
+                overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_right);
 
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_right);
     }
 }

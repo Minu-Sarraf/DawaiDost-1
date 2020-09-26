@@ -1,5 +1,6 @@
 package com.example.ddost.ui.subscription;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.database.Cursor;
@@ -97,7 +98,7 @@ public class SubscriptionFragment extends Fragment {
         email= root.findViewById(R.id.emailIdText);
         medicine= root.findViewById(R.id.regularMedicineText);
 
-        SharedPreferencesValue sharedPreferencesValue = new SharedPreferencesValue(getContext());
+        final SharedPreferencesValue sharedPreferencesValue = new SharedPreferencesValue(getContext());
         sharedPreferencesValue.setSharedPreferences();
         name.setText(sharedPreferencesValue.getName());
         phone.setText(sharedPreferencesValue.getPhone());
@@ -111,14 +112,15 @@ public class SubscriptionFragment extends Fragment {
                 uPhone=phone.getText().toString();
                 uEmail=email.getText().toString();
                 uMedicine=medicine.getText().toString();
-                if(uName.length()==0){
+
+                if(uName.trim().length()<2){
                     name.setError("Please enter your full name!");
-                }else if (uPhone.length()!=10){
+                }else if (uPhone.trim().length()!=10){
                     phone.setError("Please enter a valid phone number!");
-                }else if(uEmail.length()==0){
-                    email.setError("Please enter a valid email");
-                }else if(uMedicine.length()==0){
-                    medicine.setError("Please enter a medicine");
+                }else if(uEmail.length()==0 && sharedPreferencesValue.isValidEmail(uEmail.trim())){
+                    email.setError("Please enter a valid email!");
+                }else if(uMedicine.trim().length()<2){
+                    medicine.setError("Please enter a medicine's name!");
                 }else{
                     boolean connected=false;
                     ConnectivityManager connectivityManager = (ConnectivityManager)getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -127,7 +129,7 @@ public class SubscriptionFragment extends Fragment {
                         connected = true;
                     }
                     if(!connected){
-                        Snackbar.make(v,"No Internet Connection",Snackbar.LENGTH_SHORT).show();
+                        Snackbar.make(v,"No Internet Connection",Snackbar.LENGTH_LONG).show();
                         return;
                     }
                     SendMedicine sendMedicine = new SendMedicine();
@@ -139,19 +141,10 @@ public class SubscriptionFragment extends Fragment {
         return root;
     }
 
-    public void postData(){
-        String url ="https://docs.google.com/forms/u/3/d/e/1FAIpQLSemiKHSLNNbhopYWhF1FkrNSLQA06nJXoZGPFwgRYIjwYr1Fg/formResponse";
-        String data = "entry_107466921="+ URLEncoder.encode(uPhone)+"&"+
-                "entry_2038832908="+ URLEncoder.encode(uName)+"&"+
-                "entry_985234850="+ URLEncoder.encode(uEmail)+"&"+
-                "entry_841824018="+ URLEncoder.encode(uMedicine);
-
-        SendSheet sendSheet = new SendSheet(getContext(),url,data);
-        sendSheet.execute();
-    }
-
+    @SuppressLint("StaticFieldLeak")
     public class SendMedicine extends AsyncTask<Void, Void, Void>{
         ProgressDialog progressDialog;
+        String mResponse;
 
         @Override
         protected void onPreExecute() {
@@ -171,7 +164,7 @@ public class SubscriptionFragment extends Fragment {
                     "entry_841824018="+ URLEncoder.encode(uMedicine);
 
             HttpRequest mRequest = new HttpRequest();
-            mRequest.sendPost(url,data);
+            mResponse=  mRequest.sendPost(url,data);
             return null;
         }
 
@@ -179,8 +172,13 @@ public class SubscriptionFragment extends Fragment {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             progressDialog.dismiss();
-            medicine.setText("");
-            Toast.makeText(getContext(),"Data Sent",Toast.LENGTH_SHORT).show();
+            if(mResponse!=null){
+                medicine.setText("");
+                Toast.makeText(getContext(),"Data Sent",Toast.LENGTH_LONG).show();
+            }else{
+                Toast.makeText(getContext(),"Error Sending Data",Toast.LENGTH_LONG).show();
+            }
+
         }
     }
 }

@@ -4,7 +4,7 @@ import android.app.ActionBar;
 import android.content.Context;
 
 public class SendSheet {
-    String url;
+    private String url;
     String data;
     String mResponse;
     Context context;

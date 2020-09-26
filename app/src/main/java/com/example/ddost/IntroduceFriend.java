@@ -147,14 +147,18 @@ public class IntroduceFriend extends AppCompatActivity {
         SendSheet sendSheet = new SendSheet(getApplicationContext(),url,data);
         sendSheet.execute();
         Toast.makeText(IntroduceFriend.this,"Data Sent",Toast.LENGTH_SHORT).show();
+
         finish();
+        overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_right);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()){
             case android.R.id.home:
+
                 finish();
+                overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_right);
 
         }
         return super.onOptionsItemSelected(item);
@@ -241,4 +245,9 @@ public class IntroduceFriend extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_right);
+    }
 }

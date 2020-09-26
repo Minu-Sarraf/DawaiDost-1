@@ -1,8 +1,11 @@
 package com.example.ddost;
 
 import android.app.ActionBar;
+import android.app.AlertDialog;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -16,6 +19,7 @@ import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+import com.example.ddost.ui.cart.CartFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonParser;
@@ -38,11 +42,7 @@ import java.math.BigInteger;
 
 public class MainActivity extends AppCompatActivity {
 
-    //https://script.google.com/macros/s/AKfycbympuU1A4Txx5B7YPBmTfQ5J1zQxdZ13x3OL0DOepRk9F9LTQui/exec
-
     static boolean syncedMedicine = false;
-    String mResponse;
-    ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,12 +51,31 @@ public class MainActivity extends AppCompatActivity {
 
         final String url = "https://script.google.com/macros/s/AKfycbxOLElujQcy1-ZUer1KgEvK16gkTLUqYftApjNCM_IRTL3HSuDk/exec?id=1XcU1TbA56-JNM0Qsj9ihyt3mgzFGVWeHFFIUn-7_4wM&sheet=Med";
 
+        String dataType = "Medicine";
+
+        Intent intent = getIntent();
+        dataType = intent.getStringExtra("LOGIN");
+        if(dataType==null){
+            dataType="Medicine";
+        }
+
+        SQLiteOpenHelper helper = new Database(MainActivity.this);
+        final SQLiteDatabase db = helper.getReadableDatabase();
+        Cursor cursor = db.query("CART",
+                new String[]{"CODE"},
+                null,null,null,null,null);
+
         if(!syncedMedicine){
-            GetData getData = new GetData(MainActivity.this,this,url,"Medicine");
+            GetData getData = new GetData(MainActivity.this,this,url,dataType);
             getData.showProgressBar();
             getData.execute("Home");
             syncedMedicine=!syncedMedicine;
+        }else if(dataType.equals("login") && cursor.moveToFirst()){
+            GetData getData = new GetData(MainActivity.this,this,url,dataType);
+            getData.showProgressBar();
+            getData.execute("login");
         }
+        cursor.close();
 
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
@@ -69,5 +88,6 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
     }
+
 
 }

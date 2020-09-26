@@ -1,6 +1,7 @@
 package com.example.ddost.ui.cart;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -14,6 +15,7 @@ import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
@@ -29,6 +31,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.MediaStore;
+import android.text.format.Formatter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -37,6 +40,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -51,6 +55,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.ddost.CartAdapter;
+import com.example.ddost.CartDeleteUpdate;
+import com.example.ddost.ConfirmOrder;
 import com.example.ddost.Database;
 import com.example.ddost.GetData;
 import com.example.ddost.GetImage;
@@ -58,6 +64,7 @@ import com.example.ddost.MainActivity;
 import com.example.ddost.NoConnection;
 import com.example.ddost.R;
 import com.example.ddost.SearchMedicine;
+import com.example.ddost.SendSheet;
 import com.example.ddost.SharedPreferencesValue;
 import com.example.ddost.ShowCart;
 import com.example.ddost.UpdateDetails;
@@ -72,6 +79,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 import static android.app.Activity.RESULT_CANCELED;
@@ -116,8 +124,8 @@ public class CartFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         setHasOptionsMenu(true);
-
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -150,6 +158,7 @@ public class CartFragment extends Fragment {
         Cursor images = db.query("IMAGES",
                 new String[]{"CART"},
                 null,null,null,null,null);
+
         ArrayList<String> image = new ArrayList<>();
         boolean cursorValue = images.moveToFirst();
         while(cursorValue){
@@ -157,7 +166,9 @@ public class CartFragment extends Fragment {
             cursorValue=images.moveToNext();
         }
 
-        Picasso.get().load(image.get(0))
+        Picasso
+                .get()
+                .load(image.get(0))
                 .fit()
                 .into(imageView);
         images.close();
@@ -178,18 +189,17 @@ public class CartFragment extends Fragment {
         sharedPreferencesValue.setSharedPreferences();
 
         //get delivery charge
-            GetDelivery getDelivery = new GetDelivery();
-            String url="";
-            myCart = root.findViewById(R.id.myCart);
-            getData= new GetData(getContext(),getActivity(),url,"Delivery");
-            getData.showProgressBar();
-            myCart.setVisibility(View.INVISIBLE);
-            getDelivery.execute();
-
+        GetDelivery getDelivery = new GetDelivery();
+        String url="";
+        myCart = root.findViewById(R.id.myCart);
+        getData= new GetData(getContext(),getActivity(),url,"Delivery");
+        getData.showProgressBar();
+        myCart.setVisibility(View.INVISIBLE);
+        getDelivery.execute();
 
 
         //getting images
-        getImage=new GetImage(getContext(),"CART");
+        getImage=new GetImage(getContext(),getActivity(),"CART");
 
 
         //search Medicines
@@ -233,6 +243,10 @@ public class CartFragment extends Fragment {
                     totalMrp+=cursor.getFloat(5)*cursors.getInt(7);
                 }
                 cursorValue= cursors.moveToNext();
+
+                if(!cursorValue){
+                    cursor.close();
+                }
             }
 
             cursors.close();
@@ -319,10 +333,12 @@ public class CartFragment extends Fragment {
                     public void onClick(DialogInterface dialog, int which) {
                         db.delete("CART",null,null);
                         Toast.makeText(getContext(),"Cart Cleared",Toast.LENGTH_SHORT).show();
+                        new CartDeleteUpdate.DeleteDataActivity(getContext()).execute();
                         dialog.dismiss();
                         Intent intent1 = new Intent(getContext(), ShowCart.class);
                         intent1.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent1);
+                        getActivity().overridePendingTransition(R.anim.fade_in,R.anim.fade_out);
                     }
                 });
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -378,6 +394,7 @@ public class CartFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         Bitmap rbitmap;
         String userImage;
+        Log.d("prescription",requestCode+" "+resultCode);
         if(resultCode!=RESULT_CANCELED){
             if(requestCode==1){
                 if(data.getExtras()==null && data.getData()==null){
@@ -509,6 +526,7 @@ public class CartFragment extends Fragment {
     }
 
 
+    @SuppressLint("StaticFieldLeak")
     public class GetDelivery extends AsyncTask<String, Integer, JSONObject> {
         //get request to a google sheet
         private JSONObject finalResponse = new JSONObject();
@@ -533,8 +551,8 @@ public class CartFragment extends Fragment {
                                 getData.hideProgressBar();
 
                                 db.delete("RATE",null,null);
-
                                 storeDelivery(response);
+
                                 setDeliveryCharge();
                                 myCart.setVisibility(View.VISIBLE);
 
@@ -564,4 +582,5 @@ public class CartFragment extends Fragment {
         }
 
     }
+
 }

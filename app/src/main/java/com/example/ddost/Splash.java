@@ -63,6 +63,7 @@ public class Splash extends Activity {
                 /* Create an Intent that will start the Menu-Activity. */
                 if(!finalConnected){
                     intent = new Intent(Splash.this,NoConnection.class);
+                    intent.putExtra("COMING","login");
                 }else if(name.equals(" ")){
                     intent = new Intent(Splash.this,LoginPage.class);
                 }else{
